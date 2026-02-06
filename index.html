@@ -1373,6 +1373,21 @@
     } else {
       initFirebase();
     }
+
+    // Глобальный fingerprint устройства (для Firebase sync между Калькулятором и Календарём)
+    window.getDeviceFingerprint = function () {
+      var nav = navigator;
+      var scr = window.screen;
+      var components = [nav.userAgent, nav.language, scr.colorDepth, scr.width + 'x' + scr.height];
+      var hash = 0;
+      var str = components.join('|');
+      for (var i = 0; i < str.length; i++) {
+        var c = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + c;
+        hash = hash & hash;
+      }
+      return 'DEV-' + Math.abs(hash).toString(36).toUpperCase();
+    };
   </script>
 
 </head>
@@ -5361,7 +5376,7 @@
           return { ok: false, reason: 'SDK не загружен' };
         }
         try {
-          const deviceKey = getDeviceId();
+          const deviceKey = window.getDeviceFingerprint();
           const eventRef = window.firebaseDB.ref('sync/events/' + deviceKey + '/' + event.id);
           await eventRef.set({
             ...event,
@@ -5396,7 +5411,7 @@
           const remaining = [];
           for (const event of queue) {
             try {
-              const deviceKey = getDeviceId();
+              const deviceKey = window.getDeviceFingerprint();
               const eventRef = window.firebaseDB.ref('sync/events/' + deviceKey + '/' + event.id);
               await eventRef.set({ ...event, _source: 'calculator', _createdAt: new Date().toISOString() });
             } catch (e) {

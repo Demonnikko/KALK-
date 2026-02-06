@@ -1457,7 +1457,7 @@
   </div>
 
   <!-- ========== HEADER ========== -->
-  <header class="relative z-10">
+  <header id="app-header" class="relative z-10" style="display:none;">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center"
@@ -1483,7 +1483,7 @@
   </header>
 
   <!-- ========== MAIN ========== -->
-  <main class="relative z-10 px-4 pb-10">
+  <main id="app-main" class="relative z-10 px-4 pb-10" style="display:none;">
     <div class="max-w-5xl mx-auto mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- ========== LEFT PANEL ========== -->
@@ -2154,6 +2154,16 @@
       // ============================================
       // ЗАПУСК ПОСЛЕ ЗАГРУЗКИ СТРАНИЦЫ
       // ============================================
+
+      // Функция для показа основного приложения
+      function showApp() {
+        var header = document.getElementById('app-header');
+        var main = document.getElementById('app-main');
+        if (header) header.style.display = '';
+        if (main) main.style.display = '';
+      }
+      window.showApp = showApp;
+
       window.addEventListener('load', async function () {
         // ПЕРВЫМ ДЕЛОМ проверяем устройство
         if (!checkDevice()) {
@@ -2181,11 +2191,14 @@
               splash.style.transition = 'opacity 0.8s ease-out';
               setTimeout(function () {
                 splash.remove();
+                // Показываем приложение ТОЛЬКО после удаления заставки
+                showApp();
               }, 800);
             }
           }, 2500);
         } else {
           // Лицензии нет - скрываем заставку и показываем экран активации
+          // НЕ показываем приложение, пока не будет активации
           if (splash) {
             splash.style.opacity = '0';
             splash.style.transition = 'opacity 0.5s ease-out';
@@ -8327,8 +8340,12 @@
                   window.showMagicAfterActivation();
                 }
 
-                // НЕ ПЕРЕЗАГРУЖАЕМ! Приложение уже работает!
-                // Магическая анимация сама скроется через 3 секунды
+                // Показываем приложение после магической анимации (через 3 сек)
+                setTimeout(function () {
+                  if (typeof window.showApp === 'function') {
+                    window.showApp();
+                  }
+                }, 3000);
               }, 500);
 
             } else {

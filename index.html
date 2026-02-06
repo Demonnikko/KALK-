@@ -5408,32 +5408,6 @@
       },
 
       addToCalendar: async () => {
-        // Проверяем наличие Календаря
-        // 1) localStorage (работает когда оба приложения на одном домене)
-        var hasCalendar = !!localStorage.getItem('illusionist_calendar_license');
-
-        // 2) Если не нашли — пробуем Firebase (для разных доменов)
-        if (!hasCalendar && window.firebaseEnabled && window.firebaseDB) {
-          try {
-            var fp = getDeviceId();
-            var snap = await window.firebaseDB.ref('sync/devices/' + fp + '/calendar_active').once('value');
-            hasCalendar = snap.val() === true;
-          } catch (e) { }
-        }
-
-        if (!hasCalendar) {
-          const wantBuy = await PremiumDialog.confirm({
-            message: 'У вас нет Календаря ILLUSIONIST OS.\n\nХотите приобрести?',
-            okText: 'Перейти к боту',
-            cancelText: 'Отмена',
-            icon: 'calendar'
-          });
-          if (wantBuy) {
-            window.open('https://t.me/IllusionistOs_bot', '_blank');
-          }
-          return;
-        }
-
         if (!State.cart || State.cart.length === 0) {
           App.showToast('⚠️ Корзина пуста');
           return;

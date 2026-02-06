@@ -5408,20 +5408,17 @@
       },
 
       addToCalendar: async () => {
-        // Проверяем наличие Календаря через Firebase-маркер
-        var hasCalendar = false;
-        if (window.firebaseEnabled && window.firebaseDB) {
+        // Проверяем наличие Календаря
+        // 1) localStorage (работает когда оба приложения на одном домене)
+        var hasCalendar = !!localStorage.getItem('illusionist_calendar_license');
+
+        // 2) Если не нашли — пробуем Firebase (для разных доменов)
+        if (!hasCalendar && window.firebaseEnabled && window.firebaseDB) {
           try {
             var fp = getDeviceId();
             var snap = await window.firebaseDB.ref('sync/devices/' + fp + '/calendar_active').once('value');
             hasCalendar = snap.val() === true;
-          } catch (e) {
-            // Firebase недоступен — пропускаем проверку, разрешаем бронирование
-            hasCalendar = true;
-          }
-        } else {
-          // Firebase не загружен — пропускаем проверку
-          hasCalendar = true;
+          } catch (e) { }
         }
 
         if (!hasCalendar) {
@@ -5521,14 +5518,10 @@
           events.push(newEvent);
           localStorage.setItem('illusionist_events', JSON.stringify(events));
 
-          // Синхронизация с Firebase
-          App._syncEventToFirebase(newEvent).then(synced => {
-            App.showToast(synced
-              ? '✅ Забронировано и синхронизировано!'
-              : '✅ Забронировано! Синхронизация при подключении');
-          }).catch(() => {
-            App.showToast('✅ Забронировано в Календарь!');
-          });
+          App.showToast('✅ Забронировано в Календарь!');
+
+          // Firebase-синхронизация в фоне (для случая разных доменов)
+          App._syncEventToFirebase(newEvent).catch(() => {});
 
         } catch (e) {
           console.error('Calendar Save Error:', e);

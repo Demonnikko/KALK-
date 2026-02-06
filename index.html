@@ -5358,7 +5358,7 @@
       _syncEventToFirebase: async (event) => {
         if (!window.firebaseEnabled || !window.firebaseDB) {
           App._queueEventForSync(event);
-          return false;
+          return { ok: false, reason: 'SDK не загружен' };
         }
         try {
           const deviceKey = getDeviceId();
@@ -5368,11 +5368,15 @@
             _source: 'calculator',
             _createdAt: new Date().toISOString()
           });
-          return true;
+          return { ok: true };
         } catch (error) {
           console.error('⚠️ Firebase sync failed:', error);
           App._queueEventForSync(event);
-          return false;
+          var msg = error.message || String(error);
+          if (msg.includes('PERMISSION_DENIED')) {
+            return { ok: false, reason: 'Нет доступа (правила Firebase)' };
+          }
+          return { ok: false, reason: msg.substring(0, 60) };
         }
       },
 
@@ -5494,16 +5498,14 @@
 
           // Firebase-синхронизация (для передачи в Календарь на другом домене)
           try {
-            const synced = await App._syncEventToFirebase(newEvent);
-            if (synced) {
+            const result = await App._syncEventToFirebase(newEvent);
+            if (result.ok) {
               App.showToast('✅ Забронировано и синхронизировано!');
             } else {
-              App.showToast('✅ Забронировано! ⚠️ Облако недоступно');
-              console.warn('Firebase sync returned false. firebaseEnabled:', window.firebaseEnabled, 'firebaseDB:', !!window.firebaseDB);
+              App.showToast('✅ Забронировано! ⚠️ ' + result.reason);
             }
           } catch (syncErr) {
-            App.showToast('✅ Забронировано! ⚠️ Ошибка синхронизации');
-            console.error('Sync error:', syncErr);
+            App.showToast('✅ Забронировано! ⚠️ ' + (syncErr.message || 'Ошибка'));
           }
 
         } catch (e) {

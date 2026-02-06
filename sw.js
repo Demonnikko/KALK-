@@ -1,7 +1,7 @@
 // Service Worker для Illusionist OS
 // Версия: 6.0 (OFFLINE ENABLED)
 // Назначение: Обеспечивает работу без интернета
-const CACHE_NAME = 'illusionist-calc-v6-offline';
+const CACHE_NAME = 'illusionist-calc-v7-firebase-sync';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -38,6 +38,13 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Пропускаем Firebase и внешние сервисы
+  if (event.request.url.includes('firebase') ||
+      event.request.url.includes('gstatic.com') ||
+      event.request.url.includes('googleapis.com')) {
+    return;
+  }
+
   // Стратегия: Cache First, falling back to Network
   if (event.request.mode === 'navigate') {
     event.respondWith(

@@ -1337,9 +1337,42 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
   <script>
-    // FIREBASE REMOVED FOR PURE OFFLINE MODE
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBEL4XCzjmHaqu4RbTqNzEKPi2Vfc4LXSI",
+      authDomain: "calc76.firebaseapp.com",
+      databaseURL: "https://calc76-default-rtdb.firebaseio.com",
+      projectId: "calc76",
+      storageBucket: "calc76.firebasestorage.app",
+      messagingSenderId: "972929668805",
+      appId: "1:972929668805:web:de4aa4097f03b97d39c2ac"
+    };
+
     window.firebaseDB = null;
     window.firebaseEnabled = false;
+
+    function initFirebase() {
+      if (typeof firebase === 'undefined') {
+        window.firebaseEnabled = false;
+        return;
+      }
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        window.firebaseDB = firebase.database();
+        window.firebaseEnabled = true;
+        console.log('✅ Firebase initialized');
+      } catch (error) {
+        window.firebaseEnabled = false;
+        console.warn('⚠️ Firebase init failed:', error);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initFirebase);
+    } else {
+      initFirebase();
+    }
   </script>
 
 </head>
@@ -5321,7 +5354,75 @@
         }
       },
 
-      addToCalendar: () => {
+      // === FIREBASE SYNC ===
+      _syncEventToFirebase: async (event) => {
+        if (!window.firebaseEnabled || !window.firebaseDB) {
+          App._queueEventForSync(event);
+          return false;
+        }
+        try {
+          const deviceKey = getDeviceId();
+          const eventRef = window.firebaseDB.ref('sync/events/' + deviceKey + '/' + event.id);
+          await eventRef.set({
+            ...event,
+            _source: 'calculator',
+            _createdAt: new Date().toISOString()
+          });
+          return true;
+        } catch (error) {
+          console.error('⚠️ Firebase sync failed:', error);
+          App._queueEventForSync(event);
+          return false;
+        }
+      },
+
+      _queueEventForSync: (event) => {
+        try {
+          const queue = JSON.parse(localStorage.getItem('illusionist_sync_queue') || '[]');
+          queue.push(event);
+          localStorage.setItem('illusionist_sync_queue', JSON.stringify(queue));
+        } catch (e) { }
+      },
+
+      _processSyncQueue: async () => {
+        if (!window.firebaseEnabled || !window.firebaseDB) return;
+        try {
+          const queue = JSON.parse(localStorage.getItem('illusionist_sync_queue') || '[]');
+          if (queue.length === 0) return;
+          const remaining = [];
+          for (const event of queue) {
+            try {
+              const deviceKey = getDeviceId();
+              const eventRef = window.firebaseDB.ref('sync/events/' + deviceKey + '/' + event.id);
+              await eventRef.set({ ...event, _source: 'calculator', _createdAt: new Date().toISOString() });
+            } catch (e) {
+              remaining.push(event);
+            }
+          }
+          if (remaining.length === 0) {
+            localStorage.removeItem('illusionist_sync_queue');
+          } else {
+            localStorage.setItem('illusionist_sync_queue', JSON.stringify(remaining));
+          }
+        } catch (e) { }
+      },
+
+      addToCalendar: async () => {
+        // Проверяем наличие лицензии календаря
+        const calLicense = localStorage.getItem('illusionist_calendar_license');
+        if (!calLicense) {
+          const wantBuy = await PremiumDialog.confirm({
+            message: 'У вас нет Календаря ILLUSIONIST OS.\n\nХотите приобрести?',
+            okText: 'Перейти к боту',
+            cancelText: 'Отмена',
+            icon: 'calendar'
+          });
+          if (wantBuy) {
+            window.open('https://t.me/IllusionistOs_bot', '_blank');
+          }
+          return;
+        }
+
         if (!State.cart || State.cart.length === 0) {
           App.showToast('⚠️ Корзина пуста');
           return;
@@ -5329,9 +5430,10 @@
 
         const dateEl = document.getElementById('inp-date');
         const timeEl = document.getElementById('inp-time');
+        const timeModeEl = document.getElementById('inp-time-mode');
 
         const dateVal = dateEl ? dateEl.value : '';
-        const timeVal = timeEl ? timeEl.value : '';
+        const timeVal = (timeModeEl && timeModeEl.value === 'none') ? '12:00' : (timeEl ? timeEl.value : '12:00');
 
         if (!dateVal) {
           App.showToast('⚠️ Выберите дату для бронирования');
@@ -5340,36 +5442,62 @@
         }
 
         try {
-          const eventId = 'evt_' + Date.now();
-          const clientName = document.getElementById('inp-client-name')?.value || 'Заказчик';
-          const title = `${clientName} (из Калькулятора)`;
+          const eventId = Date.now();
 
-          const servicesList = State.cart.map(i => `• ${i.name} (${Utils.formatPrice(i.price)}₽)`).join('\n');
-          const description = `Сумма: ${Utils.formatPrice(State.finalTotal)} ₽\n\nУслуги:\n${servicesList}`;
+          // Собираем город и регион из корзины
+          const firstWithCity = State.cart.find(i => i.cityName || i.regionName);
+          const cityName = firstWithCity?.cityName || '';
+          const regionName = firstWithCity?.regionName || '';
+          const addressParts = [cityName, regionName].filter(Boolean);
+          const address = addressParts.join(', ');
 
+          // Формируем название события — услуги из корзины
+          const serviceNames = State.cart.map(i => i.name).filter(Boolean);
+          const title = serviceNames.length > 0
+            ? serviceNames.slice(0, 3).join(', ') + (serviceNames.length > 3 ? ' и др.' : '')
+            : 'Выступление';
+
+          // Чеклист из услуг корзины
+          const checklist = State.cart.map(i => ({
+            text: `${i.name}${i.qty > 1 ? ' x' + i.qty : ''} — ${Utils.formatPrice(i.price)} ₽`,
+            done: false
+          }));
+
+          // Заметки — подробная информация
+          const servicesList = State.cart.map(i =>
+            `• ${i.name}${i.qty > 1 ? ' x' + i.qty : ''} — ${Utils.formatPrice(i.price)} ₽` +
+            (i.cityName ? ` (${i.cityName})` : '')
+          ).join('\n');
+          const notes = `Итого: ${Utils.formatPrice(State.finalTotal)} ₽\n\nУслуги:\n${servicesList}`;
+
+          // Событие в формате календаря ILLUSIONIST OS
           const newEvent = {
             id: eventId,
-            title: title,
             date: dateVal,
             time: timeVal || '12:00',
-            type: 'show',
-            status: 'booked',
-            price: State.finalTotal || 0,
-            prepayment: 0,
-            client: {
-              name: clientName,
-              phone: '',
-              social: ''
-            },
-            location: {
-              address: State.cart.find(i => i.city)?.cityName || '',
-              lat: null,
-              lng: null
-            },
-            notes: description
+            title: title,
+            type: 'rabbit',
+            status: 'pending',
+            location: cityName,
+            address: address,
+            client: '',
+            phone: '',
+            guests: 0,
+            schedule: [{
+              type: 'rabbit',
+              time: timeVal || '12:00',
+              duration: 60,
+              checklist: checklist
+            }],
+            income: State.finalTotal || 0,
+            prepay: 0,
+            tax: 0,
+            expenses: [],
+            notes: notes
           };
 
-          const existingData = localStorage.getItem('illusionist_calendar_data');
+          // Записываем в illusionist_events (тот же ключ что и календарь)
+          const existingData = localStorage.getItem('illusionist_events');
           let events = [];
           if (existingData) {
             try { events = JSON.parse(existingData); } catch (e) { }
@@ -5377,9 +5505,16 @@
           if (!Array.isArray(events)) events = [];
 
           events.push(newEvent);
-          localStorage.setItem('illusionist_calendar_data', JSON.stringify(events));
+          localStorage.setItem('illusionist_events', JSON.stringify(events));
 
-          App.showToast('✅ Забронировано в Календарь!');
+          // Синхронизация с Firebase
+          App._syncEventToFirebase(newEvent).then(synced => {
+            App.showToast(synced
+              ? '✅ Забронировано и синхронизировано!'
+              : '✅ Забронировано! Синхронизация при подключении');
+          }).catch(() => {
+            App.showToast('✅ Забронировано в Календарь!');
+          });
 
         } catch (e) {
           console.error('Calendar Save Error:', e);
@@ -5863,6 +5998,8 @@
     // ============================================
     document.addEventListener('DOMContentLoaded', () => {
       App.init();
+      // Отправляем накопленную очередь синхронизации
+      setTimeout(() => App._processSyncQueue(), 3000);
     });
 
 
@@ -7980,7 +8117,6 @@
           nav.language,
           screen.colorDepth,
           screen.width + 'x' + screen.height,
-          new Date().getTimezoneOffset(),
         ];
 
         let hash = 0;

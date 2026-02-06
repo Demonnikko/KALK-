@@ -1,7 +1,7 @@
 // Service Worker для Illusionist OS
-// Версия: 6.0 (OFFLINE ENABLED)
+// Версия: 7.0 (OFFLINE + FIREBASE SDK CACHE)
 // Назначение: Обеспечивает работу без интернета
-const CACHE_NAME = 'illusionist-calc-v7-firebase-sync';
+const CACHE_NAME = 'illusionist-calc-v9-firebase-sdk';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -11,12 +11,19 @@ const ASSETS_TO_CACHE = [
   './icons/icon-512.png'
 ];
 
+// Firebase SDK — кешируем отдельно, чтобы работали в PWA
+const FIREBASE_SDK_URLS = [
+  'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js'
+];
+
 self.addEventListener('install', (event) => {
   console.log('[SW] Установка и кеширование...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Кеширование файлов');
-      return cache.addAll(ASSETS_TO_CACHE);
+      // Кешируем основные файлы + Firebase SDK
+      return cache.addAll([...ASSETS_TO_CACHE, ...FIREBASE_SDK_URLS]);
     })
   );
   self.skipWaiting();
@@ -38,10 +45,24 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Пропускаем Firebase и внешние сервисы
-  if (event.request.url.includes('firebase') ||
-      event.request.url.includes('gstatic.com') ||
+  // Firebase API запросы (RTDB, Auth) — всегда через сеть
+  if (event.request.url.includes('firebaseio.com') ||
+      event.request.url.includes('firebaseapp.com') ||
       event.request.url.includes('googleapis.com')) {
+    return;
+  }
+
+  // Firebase SDK (gstatic.com/firebasejs) — кешируем, стратегия Cache First
+  if (event.request.url.includes('gstatic.com/firebasejs')) {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((fetchResponse) => {
+          const clone = fetchResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return fetchResponse;
+        });
+      })
+    );
     return;
   }
 
@@ -63,5 +84,4 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-console.log('✅ Service Worker (Offline Ready) запущен');
-
+console.log('✅ Service Worker (Offline + Firebase SDK) запущен');

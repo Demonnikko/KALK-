@@ -5492,10 +5492,19 @@
           events.push(newEvent);
           localStorage.setItem('illusionist_events', JSON.stringify(events));
 
-          App.showToast('✅ Забронировано в Календарь!');
-
-          // Firebase-синхронизация в фоне (для случая разных доменов)
-          App._syncEventToFirebase(newEvent).catch(() => {});
+          // Firebase-синхронизация (для передачи в Календарь на другом домене)
+          try {
+            const synced = await App._syncEventToFirebase(newEvent);
+            if (synced) {
+              App.showToast('✅ Забронировано и синхронизировано!');
+            } else {
+              App.showToast('✅ Забронировано! ⚠️ Облако недоступно');
+              console.warn('Firebase sync returned false. firebaseEnabled:', window.firebaseEnabled, 'firebaseDB:', !!window.firebaseDB);
+            }
+          } catch (syncErr) {
+            App.showToast('✅ Забронировано! ⚠️ Ошибка синхронизации');
+            console.error('Sync error:', syncErr);
+          }
 
         } catch (e) {
           console.error('Calendar Save Error:', e);
@@ -8192,15 +8201,6 @@
                   return false;
                 }
 
-                // Проверяем что это тот же Device ID
-                const currentDevice = getDeviceId();
-                if (firebaseData.deviceId !== currentDevice) {
-                  console.log('❌ Device ID mismatch');
-                  console.log('   Stored:', firebaseData.deviceId);
-                  console.log('   Current:', currentDevice);
-                  return false;
-                }
-
                 // Проверяем срок действия
                 const activated = new Date(firebaseData.activatedDate);
                 const now = new Date();
@@ -8221,12 +8221,6 @@
             }
 
             // ЛОКАЛЬНАЯ ПРОВЕРКА (если Firebase отключен или недоступен)
-            const currentDevice = getDeviceId();
-            if (data.device !== currentDevice) {
-              console.log('❌ Device ID mismatch (local)');
-              return false;
-            }
-
             const activated = new Date(data.activated);
             const now = new Date();
             const daysDiff = (now - activated) / (1000 * 60 * 60 * 24);

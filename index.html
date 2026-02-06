@@ -1368,6 +1368,17 @@
     </div>
   </div>
 
+  <!-- РАННЯЯ ПРОВЕРКА: если лицензии нет в localStorage, сразу скрываем заставку -->
+  <script>
+    (function() {
+      var lic = localStorage.getItem('illusionist_license');
+      if (!lic) {
+        var s = document.getElementById('simple-splash');
+        if (s) s.style.display = 'none';
+      }
+    })();
+  </script>
+
   <!-- БЛОКИРОВКА ДЕСКТОПА - показывается только на ПК -->
   <div id="desktop-block"
     style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#050507;z-index:999998;align-items:center;justify-content:center;padding:40px 20px;">
@@ -2197,18 +2208,13 @@
             }
           }, 2500);
         } else {
-          // Лицензии нет - скрываем заставку и показываем экран активации
-          // НЕ показываем приложение, пока не будет активации
+          // Лицензии нет - СРАЗУ убираем заставку и показываем экран активации
+          // Никакой анимации, никакой задержки
           if (splash) {
-            splash.style.opacity = '0';
-            splash.style.transition = 'opacity 0.5s ease-out';
-            setTimeout(function () {
-              splash.remove();
-              // Показываем экран активации
-              if (typeof showLicensePrompt === 'function') {
-                showLicensePrompt(hasLic === 'expired' ? 'expired' : 'first');
-              }
-            }, 500);
+            splash.remove();
+          }
+          if (typeof showLicensePrompt === 'function') {
+            showLicensePrompt(hasLic === 'expired' ? 'expired' : 'first');
           }
         }
       });

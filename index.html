@@ -493,7 +493,8 @@
       right: 0 !important;
       top: env(safe-area-inset-top) !important;
       bottom: env(safe-area-inset-bottom) !important;
-      transform: none !important;
+      transform: translateZ(0) !important;
+      -webkit-transform: translateZ(0) !important;
       width: 100% !important;
       max-width: 100% !important;
       max-height: none !important;
@@ -507,8 +508,6 @@
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
       background: #0a0a0f !important;
-      /* GPU-ускорение скролла */
-      will-change: scroll-position;
     }
 
     /* Отключаем backdrop-filter у внутренних glass-элементов в настройках */
@@ -1325,12 +1324,9 @@
   </style>
 
   <style>
-    /* Perf: уменьшение стоимости рендера (не влияет на дизайн/функции) */
-    @supports (content-visibility:auto) {
-      #view-settings .panel .glass {
-        content-visibility: auto;
-        contain-intrinsic-size: 800px
-      }
+    /* Perf: изоляция layout для секций настроек */
+    #view-settings .panel .glass {
+      contain: layout style paint;
     }
   </style>
 
@@ -8325,26 +8321,31 @@
             if (result.success) {
               // Успех!
               button.textContent = '✅ Активировано!';
+              button.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+              button.style.color = '#fff';
 
-              // Плавно убираем окно активации
-              overlay.style.transition = 'opacity 0.5s';
-              overlay.style.opacity = '0';
-
+              // Задержка 1.5с чтобы пользователь увидел "Активировано!"
               setTimeout(function () {
-                document.body.removeChild(overlay);
+                // Плавно убираем окно активации
+                overlay.style.transition = 'opacity 0.6s';
+                overlay.style.opacity = '0';
 
-                // Показываем магическую анимацию
-                if (typeof window.showMagicAfterActivation === 'function') {
-                  window.showMagicAfterActivation();
-                }
-
-                // Показываем приложение после магической анимации (через 3 сек)
                 setTimeout(function () {
-                  if (typeof window.showApp === 'function') {
-                    window.showApp();
+                  document.body.removeChild(overlay);
+
+                  // Показываем магическую анимацию
+                  if (typeof window.showMagicAfterActivation === 'function') {
+                    window.showMagicAfterActivation();
                   }
-                }, 3000);
-              }, 500);
+
+                  // Показываем приложение после магической анимации (через 3 сек)
+                  setTimeout(function () {
+                    if (typeof window.showApp === 'function') {
+                      window.showApp();
+                    }
+                  }, 3000);
+                }, 600);
+              }, 1500);
 
             } else {
               // Ошибка активации
@@ -8412,12 +8413,11 @@
       const arrowUpPath = '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>';
 
       var direction = 'down'; // текущее направление
+      var ticking = false;
 
       function updateIcon() {
         var scrollTop = settingsPanel.scrollTop;
-        var scrollMax = settingsPanel.scrollHeight - settingsPanel.clientHeight;
 
-        // Если прокрутили больше 150px — показываем стрелку вверх, иначе вниз
         if (scrollTop > 150) {
           if (direction !== 'up') {
             direction = 'up';
@@ -8429,15 +8429,16 @@
             icon.innerHTML = arrowDownPath;
           }
         }
-
-        // Скрываем кнопку если скроллить некуда (контент помещается)
-        if (scrollMax < 50) {
-          toggleBtn.style.display = 'none';
-        }
+        ticking = false;
       }
 
-      // Слушаем скролл панели
-      settingsPanel.addEventListener('scroll', updateIcon, { passive: true });
+      // Слушаем скролл панели — throttle через rAF (1 раз за кадр)
+      settingsPanel.addEventListener('scroll', function () {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(updateIcon);
+        }
+      }, { passive: true });
 
       // Клик — прокрутка вверх или вниз
       toggleBtn.addEventListener('click', function () {

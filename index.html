@@ -1736,28 +1736,6 @@
   <div id="view-settings" aria-hidden="true">
     <div class="panel glass p-6" style="position: relative;">
 
-      <!-- КНОПКА ВВЕРХУ ПАНЕЛИ (стрелка ВНИЗ) -->
-      <button id="scroll-down-btn" style="
-          position: absolute;
-          top: 20px;
-          right: 70px;
-          z-index: 999;
-          width: 44px;
-          height: 44px;
-          border-radius: 22px;
-          background: linear-gradient(135deg, rgba(245,158,11,0.95) 0%, rgba(251,191,36,0.95) 100%);
-          border: 2px solid rgba(245,158,11,0.3);
-          box-shadow: 0 8px 24px rgba(245,158,11,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          backdrop-filter: blur(10px);
-        " title="Прокрутить вниз">
-        <i data-lucide="arrow-down" style="width: 24px; height: 24px; color: white; stroke-width: 3;"></i>
-      </button>
-
       <div class="flex items-center justify-between mb-6">
         <div>
           <div class="font-cinzel text-white text-xl mb-1">Настройки</div>
@@ -2035,30 +2013,32 @@
           <div id="kp-buffer-list" class="space-y-2"></div>
         </div>
 
-        <!-- ЛИПКАЯ КНОПКА ВВЕРХ (прилипает к низу экрана при прокрутке) -->
-        <div
-          style="position: sticky; bottom: 20px; text-align: right; padding-right: 20px; margin-top: 20px; pointer-events: none;">
-          <button id="scroll-up-btn" style="
-              width: 56px;
-              height: 56px;
-              border-radius: 28px;
-              background: linear-gradient(135deg, rgba(245,158,11,0.95) 0%, rgba(251,191,36,0.95) 100%);
-              border: 2px solid rgba(245,158,11,0.3);
-              box-shadow: 0 8px 24px rgba(245,158,11,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
-              cursor: pointer;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-              backdrop-filter: blur(10px);
-              pointer-events: auto;
-            " title="Прокрутить вверх">
-            <i data-lucide="arrow-up" style="width: 28px; height: 28px; color: white; stroke-width: 3;"></i>
-          </button>
-        </div>
-
       </div>
     </div>
+
+    <!-- Плавающая кнопка скролла (вниз/вверх) -->
+    <button id="settings-scroll-toggle" style="
+        position: fixed;
+        bottom: calc(24px + env(safe-area-inset-bottom));
+        right: 20px;
+        z-index: 999;
+        width: 48px;
+        height: 48px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(245,158,11,0.95) 0%, rgba(251,191,36,0.95) 100%);
+        border: 2px solid rgba(245,158,11,0.3);
+        box-shadow: 0 8px 24px rgba(245,158,11,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        backdrop-filter: blur(10px);
+      ">
+      <svg id="scroll-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12l7 7 7-7"/>
+      </svg>
+    </button>
   </div>
 
   <!-- Scripts -->
@@ -8406,53 +8386,73 @@
     })();
   </script>
 
-  <!-- Скрипт для кнопок прокрутки в настройках -->
+  <!-- Скрипт для кнопки прокрутки в настройках -->
   <script>
     (function () {
       const settingsPanel = document.querySelector('#view-settings .panel');
-      const scrollDownBtn = document.getElementById('scroll-down-btn');
-      const scrollUpBtn = document.getElementById('scroll-up-btn');
+      const toggleBtn = document.getElementById('settings-scroll-toggle');
+      const icon = document.getElementById('scroll-toggle-icon');
 
-      if (!settingsPanel || !scrollDownBtn || !scrollUpBtn) return;
+      if (!settingsPanel || !toggleBtn) return;
 
-      // Плавная прокрутка ВНИЗ (кнопка вверху)
-      scrollDownBtn.addEventListener('click', () => {
-        settingsPanel.scrollTo({
-          top: settingsPanel.scrollHeight,
-          behavior: 'smooth'
-        });
-      });
+      // SVG пути для стрелок
+      const arrowDownPath = '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>';
+      const arrowUpPath = '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>';
 
-      // Плавная прокрутка ВВЕРХ (кнопка внизу)
-      scrollUpBtn.addEventListener('click', () => {
-        settingsPanel.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      });
+      var direction = 'down'; // текущее направление
 
-      // Эффекты при наведении
-      [scrollDownBtn, scrollUpBtn].forEach(btn => {
-        btn.addEventListener('mouseenter', function () {
-          this.style.transform = 'scale(1.1)';
-          this.style.boxShadow = '0 12px 32px rgba(245,158,11,0.6), 0 0 0 1px rgba(255,255,255,0.2) inset';
-        });
+      function updateIcon() {
+        var scrollTop = settingsPanel.scrollTop;
+        var scrollMax = settingsPanel.scrollHeight - settingsPanel.clientHeight;
 
-        btn.addEventListener('mouseleave', function () {
-          this.style.transform = 'scale(1)';
-          this.style.boxShadow = '0 8px 24px rgba(245,158,11,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset';
-        });
-      });
+        // Если прокрутили больше 150px — показываем стрелку вверх, иначе вниз
+        if (scrollTop > 150) {
+          if (direction !== 'up') {
+            direction = 'up';
+            icon.innerHTML = arrowUpPath;
+          }
+        } else {
+          if (direction !== 'down') {
+            direction = 'down';
+            icon.innerHTML = arrowDownPath;
+          }
+        }
 
-      // Рендерим иконки когда открываются настройки
-      const observer = new MutationObserver(() => {
-        const isOpen = document.getElementById('view-settings').classList.contains('active');
-        if (isOpen && window.lucide) {
-          lucide.createIcons();
+        // Скрываем кнопку если скроллить некуда (контент помещается)
+        if (scrollMax < 50) {
+          toggleBtn.style.display = 'none';
+        }
+      }
+
+      // Слушаем скролл панели
+      settingsPanel.addEventListener('scroll', updateIcon, { passive: true });
+
+      // Клик — прокрутка вверх или вниз
+      toggleBtn.addEventListener('click', function () {
+        if (direction === 'down') {
+          settingsPanel.scrollTo({ top: settingsPanel.scrollHeight, behavior: 'smooth' });
+        } else {
+          settingsPanel.scrollTo({ top: 0, behavior: 'smooth' });
         }
       });
 
-      observer.observe(document.getElementById('view-settings'), {
+      // Показываем/скрываем кнопку при открытии/закрытии настроек
+      const viewSettings = document.getElementById('view-settings');
+      const observer = new MutationObserver(() => {
+        const isOpen = viewSettings.classList.contains('active');
+        if (isOpen) {
+          // Сброс при открытии
+          settingsPanel.scrollTop = 0;
+          direction = 'down';
+          icon.innerHTML = arrowDownPath;
+          toggleBtn.style.display = 'flex';
+          if (window.lucide) lucide.createIcons();
+        } else {
+          toggleBtn.style.display = 'none';
+        }
+      });
+
+      observer.observe(viewSettings, {
         attributes: true,
         attributeFilter: ['class']
       });

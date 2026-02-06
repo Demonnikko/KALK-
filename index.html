@@ -502,6 +502,7 @@
       overflow-y: auto !important;
       overflow-x: hidden !important;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     @media (min-width:768px) {
@@ -2153,25 +2154,50 @@
       // ============================================
       // ЗАПУСК ПОСЛЕ ЗАГРУЗКИ СТРАНИЦЫ
       // ============================================
-      window.addEventListener('load', function () {
+      window.addEventListener('load', async function () {
         // ПЕРВЫМ ДЕЛОМ проверяем устройство
         if (!checkDevice()) {
           return; // Если десктоп - не загружаем приложение
         }
 
-        // Системные шрифты загружаются мгновенно - просто показываем заставку 2.5 сек
-        setTimeout(function () {
-          var s = document.getElementById('simple-splash');
-          if (s) {
-            s.style.opacity = '0';
-            s.style.transition = 'opacity 0.8s ease-out';
+        var splash = document.getElementById('simple-splash');
 
-            setTimeout(async function () {
-              s.remove();
-              await checkLicense();
-            }, 800);
+        // СНАЧАЛА проверяем лицензию (пока заставка ещё видна)
+        var hasLic = false;
+        try {
+          if (typeof checkActivation === 'function') {
+            hasLic = await checkActivation();
           }
-        }, 2500);
+        } catch (e) {
+          console.error('License check error:', e);
+          hasLic = false;
+        }
+
+        if (hasLic === true) {
+          // Лицензия есть - показываем заставку 2.5 сек, потом калькулятор
+          setTimeout(function () {
+            if (splash) {
+              splash.style.opacity = '0';
+              splash.style.transition = 'opacity 0.8s ease-out';
+              setTimeout(function () {
+                splash.remove();
+              }, 800);
+            }
+          }, 2500);
+        } else {
+          // Лицензии нет - скрываем заставку и показываем экран активации
+          if (splash) {
+            splash.style.opacity = '0';
+            splash.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(function () {
+              splash.remove();
+              // Показываем экран активации
+              if (typeof showLicensePrompt === 'function') {
+                showLicensePrompt(hasLic === 'expired' ? 'expired' : 'first');
+              }
+            }, 500);
+          }
+        }
       });
     })();
 
@@ -5296,13 +5322,13 @@
 
         const dateEl = document.getElementById('inp-date');
         const timeEl = document.getElementById('inp-time');
-        
-        const dateVal = dateEl ? dateEl.value : ''; 
-        const timeVal = timeEl ? timeEl.value : ''; 
+
+        const dateVal = dateEl ? dateEl.value : '';
+        const timeVal = timeEl ? timeEl.value : '';
 
         if (!dateVal) {
           App.showToast('⚠️ Выберите дату для бронирования');
-          if(dateEl) dateEl.focus();
+          if (dateEl) dateEl.focus();
           return;
         }
 
@@ -5310,7 +5336,7 @@
           const eventId = 'evt_' + Date.now();
           const clientName = document.getElementById('inp-client-name')?.value || 'Заказчик';
           const title = `${clientName} (из Калькулятора)`;
-          
+
           const servicesList = State.cart.map(i => `• ${i.name} (${Utils.formatPrice(i.price)}₽)`).join('\n');
           const description = `Сумма: ${Utils.formatPrice(State.finalTotal)} ₽\n\nУслуги:\n${servicesList}`;
 
@@ -5319,19 +5345,19 @@
             title: title,
             date: dateVal,
             time: timeVal || '12:00',
-            type: 'show', 
+            type: 'show',
             status: 'booked',
             price: State.finalTotal || 0,
             prepayment: 0,
             client: {
-               name: clientName,
-               phone: '',
-               social: ''
+              name: clientName,
+              phone: '',
+              social: ''
             },
             location: {
-               address: State.cart.find(i => i.city)?.cityName || '',
-               lat: null,
-               lng: null
+              address: State.cart.find(i => i.city)?.cityName || '',
+              lat: null,
+              lng: null
             },
             notes: description
           };
@@ -5339,18 +5365,18 @@
           const existingData = localStorage.getItem('illusionist_calendar_data');
           let events = [];
           if (existingData) {
-              try { events = JSON.parse(existingData); } catch(e){}
+            try { events = JSON.parse(existingData); } catch (e) { }
           }
           if (!Array.isArray(events)) events = [];
-          
+
           events.push(newEvent);
           localStorage.setItem('illusionist_calendar_data', JSON.stringify(events));
-          
+
           App.showToast('✅ Забронировано в Календарь!');
-          
+
         } catch (e) {
-            console.error('Calendar Save Error:', e);
-            App.showToast('❌ Ошибка при сохранении');
+          console.error('Calendar Save Error:', e);
+          App.showToast('❌ Ошибка при сохранении');
         }
       },
 
@@ -8422,3 +8448,5 @@
       width: 52px !important;
       height: 52px !important;
     }
+  }
+</style>

@@ -4,7 +4,7 @@
 const CACHE_NAME = 'illusionist-calc-v6-offline';
 const ASSETS_TO_CACHE = [
   './',
-  './Финальная версия.html',
+  './index.html',
   './manifest.webmanifest',
   './icons/icon-32.png',
   './icons/icon-192.png',
@@ -41,9 +41,9 @@ self.addEventListener('fetch', (event) => {
   // Стратегия: Cache First, falling back to Network
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('./Финальная версия.html').then((response) => {
+      caches.match('./index.html').then((response) => {
         return response || fetch(event.request).catch(() => {
-          return caches.match('./Финальная версия.html');
+          return caches.match('./index.html');
         });
       })
     );

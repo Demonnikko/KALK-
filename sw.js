@@ -1,87 +1,126 @@
-// Service Worker для Illusionist OS
-// Версия: 7.0 (OFFLINE + FIREBASE SDK CACHE)
-// Назначение: Обеспечивает работу без интернета
-const CACHE_NAME = 'illusionist-calc-v9-firebase-sdk';
-const ASSETS_TO_CACHE = [
+// Service Worker для Illusionist Calculator
+// Версия: 10.0 (OPTIMIZED OFFLINE + FAST START)
+const CACHE_NAME = 'illusionist-calc-v10-fast';
+
+// Критические ресурсы
+const CORE_ASSETS = [
   './',
   './index.html',
-  './manifest.webmanifest',
-  './icons/icon-32.png',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './manifest.webmanifest'
 ];
 
-// Firebase SDK — кешируем отдельно, чтобы работали в PWA
-const FIREBASE_SDK_URLS = [
+// Иконки
+const ICON_ASSETS = [
+  './icons/icon-32.png',
+  './icons/icon-72.png',
+  './icons/icon-96.png',
+  './icons/icon-128.png',
+  './icons/icon-144.png',
+  './icons/icon-152.png',
+  './icons/icon-192.png',
+  './icons/icon-384.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-192.png',
+  './icons/icon-maskable-512.png'
+];
+
+// Firebase SDK
+const FIREBASE_SDK = [
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js'
 ];
 
-self.addEventListener('install', (event) => {
-  console.log('[SW] Установка и кеширование...');
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Кеширование файлов');
-      // Кешируем основные файлы + Firebase SDK
-      return cache.addAll([...ASSETS_TO_CACHE, ...FIREBASE_SDK_URLS]);
-    })
-  );
+// CDN ресурсы
+const CDN_ASSETS = [
+  'https://cdn.tailwindcss.com',
+  'https://unpkg.com/lucide@latest'
+];
+
+const ALL_ASSETS = [...CORE_ASSETS, ...ICON_ASSETS, ...FIREBASE_SDK, ...CDN_ASSETS];
+
+// Установка: кэшируем все ресурсы
+self.addEventListener('install', event => {
   self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Активация...');
   event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(keyList.map((key) => {
-        if (key !== CACHE_NAME) {
-          console.log('[SW] Удаление старого кеша', key);
-          return caches.delete(key);
-        }
-      }));
+    caches.open(CACHE_NAME).then(cache => {
+      return Promise.allSettled(
+        ALL_ASSETS.map(url =>
+          cache.add(url).catch(err => console.warn('[SW] Не удалось кэшировать:', url))
+        )
+      );
     })
   );
-  event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener('fetch', (event) => {
-  // Firebase API запросы (RTDB, Auth) — всегда через сеть
-  if (event.request.url.includes('firebaseio.com') ||
-      event.request.url.includes('firebaseapp.com') ||
-      event.request.url.includes('googleapis.com')) {
+// Активация: очистка старых кэшей
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then(names =>
+        Promise.all(names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n)))
+      )
+    ])
+  );
+});
+
+// Fetch: стратегии кэширования
+self.addEventListener('fetch', event => {
+  const url = event.request.url;
+
+  // Firebase API — только сеть
+  if (url.includes('firebaseio.com') ||
+    url.includes('firebaseapp.com') ||
+    url.includes('googleapis.com')) {
     return;
   }
 
-  // Firebase SDK (gstatic.com/firebasejs) — кешируем, стратегия Cache First
-  if (event.request.url.includes('gstatic.com/firebasejs')) {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((fetchResponse) => {
-          const clone = fetchResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return fetchResponse;
-        });
-      })
-    );
-    return;
-  }
-
-  // Стратегия: Cache First, falling back to Network
+  // Навигация — Cache First для мгновенного старта
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('./index.html').then((response) => {
-        return response || fetch(event.request).catch(() => {
-          return caches.match('./index.html');
-        });
+      caches.match('./index.html').then(cached => {
+        return cached || fetch(event.request);
       })
     );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request);
-      })
-    );
+    return;
   }
-});
 
-console.log('✅ Service Worker (Offline + Firebase SDK) запущен');
+  // CDN и SDK — Stale-While-Revalidate
+  if (url.includes('gstatic.com') ||
+    url.includes('cdn.tailwindcss.com') ||
+    url.includes('unpkg.com')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        const fetchPromise = fetch(event.request).then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        }).catch(() => cached);
+
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // Остальные ресурсы — Cache First
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+
+      return fetch(event.request).then(response => {
+        if (event.request.method === 'GET' && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
+    })
+  );
+});

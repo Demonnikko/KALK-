@@ -34,10 +34,7 @@
   <!-- DNS Prefetch & Preconnect для быстрой загрузки -->
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
-  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
-  <link rel="dns-prefetch" href="https://unpkg.com">
-  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <!-- Используем локальные файлы для офлайн работы -->
   <link rel="dns-prefetch" href="https://www.gstatic.com">
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://calc76-default-rtdb.firebaseio.com">
@@ -80,13 +77,13 @@
     }
   </style>
 
-  <!-- Tailwind -->
-  <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
-  <script src="https://cdn.tailwindcss.com" defer></script>
+  <!-- Tailwind (локальный файл для офлайн работы) -->
+  <link rel="preload" href="tailwind.min.js" as="script">
+  <script src="tailwind.min.js"></script>
 
-  <!-- Lucide -->
-  <link rel="preload" href="https://unpkg.com/lucide@latest" as="script">
-  <script src="https://unpkg.com/lucide@latest" defer></script>
+  <!-- Lucide (локальный файл для офлайн работы) -->
+  <link rel="preload" href="lucide.min.js" as="script">
+  <script src="lucide.min.js"></script>
 
   <!-- Critical CSS для мгновенного рендера -->
   <style>

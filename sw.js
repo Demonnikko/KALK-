@@ -1,12 +1,14 @@
 // Service Worker для Illusionist Calculator
-// Версия: 10.0 (OPTIMIZED OFFLINE + FAST START)
-const CACHE_NAME = 'illusionist-calc-v10-fast';
+// Версия: 11.0 (FULL OFFLINE WITH LOCAL DEPENDENCIES)
+const CACHE_NAME = 'illusionist-calc-v11-offline';
 
 // Критические ресурсы
 const CORE_ASSETS = [
   './',
   './index.html',
-  './manifest.webmanifest'
+  './manifest.webmanifest',
+  './tailwind.min.js',
+  './lucide.min.js'
 ];
 
 // Иконки
@@ -30,13 +32,7 @@ const FIREBASE_SDK = [
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js'
 ];
 
-// CDN ресурсы
-const CDN_ASSETS = [
-  'https://cdn.tailwindcss.com',
-  'https://unpkg.com/lucide@latest'
-];
-
-const ALL_ASSETS = [...CORE_ASSETS, ...ICON_ASSETS, ...FIREBASE_SDK, ...CDN_ASSETS];
+const ALL_ASSETS = [...CORE_ASSETS, ...ICON_ASSETS, ...FIREBASE_SDK];
 
 // Установка: кэшируем все ресурсы
 self.addEventListener('install', event => {
@@ -85,10 +81,8 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // CDN и SDK — Stale-While-Revalidate
-  if (url.includes('gstatic.com') ||
-    url.includes('cdn.tailwindcss.com') ||
-    url.includes('unpkg.com')) {
+  // Firebase SDK — Stale-While-Revalidate
+  if (url.includes('gstatic.com')) {
     event.respondWith(
       caches.match(event.request).then(cached => {
         const fetchPromise = fetch(event.request).then(response => {

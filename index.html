@@ -1326,6 +1326,29 @@
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
+    .drawer-add-btn {
+      width: 100%;
+      padding: 10px 16px;
+      background: transparent;
+      border: 1px dashed rgba(245, 158, 11, 0.35);
+      border-radius: 10px;
+      color: rgba(245, 158, 11, 0.8);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .drawer-add-btn:active {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.6);
+      transform: scale(0.97);
+    }
+
     .drawer-template-card {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1532,11 +1555,8 @@
   </style>
 
   <!-- ============================================
-     FIREBASE SDK
+     FIREBASE SDK (динамическая загрузка - не блокирует оффлайн)
      ============================================ -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
   <script>
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBEL4XCzjmHaqu4RbTqNzEKPi2Vfc4LXSI",
@@ -1551,9 +1571,28 @@
     window.firebaseDB = null;
     window.firebaseEnabled = false;
 
+    // Загружаем Firebase SDK динамически - если нет сети, приложение работает без него
+    function loadFirebaseSDK() {
+      return new Promise(function(resolve) {
+        var timeout = setTimeout(function() { resolve(false); }, 5000);
+        var s1 = document.createElement('script');
+        s1.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js';
+        s1.onload = function() {
+          var s2 = document.createElement('script');
+          s2.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js';
+          s2.onload = function() { clearTimeout(timeout); resolve(true); };
+          s2.onerror = function() { clearTimeout(timeout); resolve(false); };
+          document.head.appendChild(s2);
+        };
+        s1.onerror = function() { clearTimeout(timeout); resolve(false); };
+        document.head.appendChild(s1);
+      });
+    }
+
     function initFirebase() {
       if (typeof firebase === 'undefined') {
         window.firebaseEnabled = false;
+        console.log('📴 Firebase SDK не загружен - работаем оффлайн');
         return;
       }
       try {
@@ -1569,11 +1608,10 @@
       }
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initFirebase);
-    } else {
+    // Запускаем загрузку SDK, затем инициализируем
+    loadFirebaseSDK().then(function(loaded) {
       initFirebase();
-    }
+    });
 
     // Глобальный fingerprint устройства (для Firebase sync между Калькулятором и Календарём)
     window.getDeviceFingerprint = function () {
@@ -8981,26 +9019,56 @@
     })();
 
     // ============================================
-    // ТАКТИЛЬНАЯ ВИБРАЦИЯ ДЛЯ UI КНОПОК
+    // ТАКТИЛЬНАЯ ОБРАТНАЯ СВЯЗЬ (вибрация + визуальный fallback для iOS)
     // ============================================
     (function() {
-      // Проверяем поддержку Vibration API
       const isVibrationSupported = 'vibrate' in navigator;
 
-      // Паттерны вибрации (в миллисекундах)
+      // CSS для визуального fallback (iOS не поддерживает navigator.vibrate)
+      const hapticStyle = document.createElement('style');
+      hapticStyle.textContent = `
+        @keyframes haptic-tap { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
+        @keyframes haptic-success { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 100% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
+        @keyframes haptic-shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 40% { transform: translateX(3px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(2px); } }
+        .haptic-tap { animation: haptic-tap 0.12s ease-out; }
+        .haptic-success { animation: haptic-success 0.4s ease-out; }
+        .haptic-shake { animation: haptic-shake 0.3s ease-out; }
+      `;
+      document.head.appendChild(hapticStyle);
+
+      // Последний нажатый элемент - для визуального fallback
+      let lastTappedEl = null;
+      document.addEventListener('pointerdown', function(e) {
+        lastTappedEl = e.target.closest('button, .card, [role="button"], .btn-gold, .btn-primary, .btn-secondary, .btn-icon, .drawer-template-card');
+      }, true);
+
       const HAPTIC = {
-        light: 15,       // Легкая вибрация
-        medium: 25,      // Средняя вибрация
-        strong: 40,      // Сильная вибрация
-        success: [15, 50, 15],  // Паттерн успеха (два быстрых импульса)
-        error: [10, 50, 10, 50, 10]  // Паттерн ошибки
+        light: 15,
+        medium: 25,
+        strong: 40,
+        success: [15, 50, 15],
+        error: [10, 50, 10, 50, 10]
       };
 
-      // Главная функция вибрации
-      window.hapticFeedback = function(type = 'medium') {
-        if (!isVibrationSupported) return;
-        const pattern = HAPTIC[type] || HAPTIC.medium;
-        navigator.vibrate(pattern);
+      // Визуальный fallback для iOS
+      function visualFeedback(type) {
+        var el = lastTappedEl;
+        if (!el) return;
+        var cls = (type === 'success') ? 'haptic-success' : (type === 'error') ? 'haptic-shake' : 'haptic-tap';
+        el.classList.remove('haptic-tap', 'haptic-success', 'haptic-shake');
+        void el.offsetWidth; // reflow
+        el.classList.add(cls);
+        setTimeout(function() { el.classList.remove(cls); }, 400);
+      }
+
+      window.hapticFeedback = function(type) {
+        type = type || 'medium';
+        if (isVibrationSupported) {
+          var pattern = HAPTIC[type] || HAPTIC.medium;
+          navigator.vibrate(pattern);
+        } else {
+          visualFeedback(type);
+        }
       };
 
       // Ждем загрузки DOM
@@ -9069,6 +9137,128 @@
 
       console.log('📳 Haptic feedback module loaded');
     })();
+
+    // ============================================
+    // ПОШАГОВЫЙ ОНБОРДИНГ ДЛЯ НОВЫХ ПОЛЬЗОВАТЕЛЕЙ
+    // ============================================
+    (function() {
+      var ONBOARDING_KEY = 'calculator_onboarding_shown';
+
+      var steps = [
+        {
+          target: '#btn-add-service',
+          title: 'Добавь услугу',
+          text: 'Выбери услугу из списка, укажи количество и нажми "Добавить". Цены подтянутся из настроек.',
+          position: 'bottom'
+        },
+        {
+          target: '#btn-copy-quote',
+          title: 'Скопируй КП',
+          text: 'Когда всё добавил - жми сюда. Готовое коммерческое предложение скопируется в буфер, отправляй клиенту.',
+          position: 'top'
+        },
+        {
+          target: null,
+          title: 'Быстрые ответы',
+          text: 'Свайпни влево от правого края экрана - откроются шаблоны быстрых ответов. Создай свои и отвечай клиентам в два клика.',
+          position: 'center',
+          icon: '👈'
+        },
+        {
+          target: null,
+          title: 'Настройки',
+          text: 'Прокрути вниз - там цены, бонусы, пакеты, логистика. Настрой под себя один раз, дальше всё считается автоматически.',
+          position: 'center',
+          icon: '⚙️'
+        }
+      ];
+
+      function showOnboarding() {
+        if (localStorage.getItem(ONBOARDING_KEY)) return;
+
+        var currentStep = 0;
+
+        function renderStep() {
+          // Убираем старый оверлей
+          var old = document.getElementById('onboarding-overlay');
+          if (old) old.remove();
+
+          if (currentStep >= steps.length) {
+            localStorage.setItem(ONBOARDING_KEY, '1');
+            return;
+          }
+
+          var step = steps[currentStep];
+          var overlay = document.createElement('div');
+          overlay.id = 'onboarding-overlay';
+          overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+
+          // Затемнение
+          var bg = document.createElement('div');
+          bg.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);';
+          overlay.appendChild(bg);
+
+          // Подсветка целевого элемента
+          if (step.target) {
+            var el = document.querySelector(step.target);
+            if (el) {
+              var rect = el.getBoundingClientRect();
+              var highlight = document.createElement('div');
+              highlight.style.cssText = 'position:fixed;border:2px solid #f59e0b;border-radius:12px;box-shadow:0 0 0 4000px rgba(0,0,0,0.8),0 0 20px rgba(245,158,11,0.5);z-index:1;';
+              highlight.style.top = (rect.top - 6) + 'px';
+              highlight.style.left = (rect.left - 6) + 'px';
+              highlight.style.width = (rect.width + 12) + 'px';
+              highlight.style.height = (rect.height + 12) + 'px';
+              overlay.appendChild(highlight);
+              bg.style.background = 'transparent';
+            }
+          }
+
+          // Карточка подсказки
+          var card = document.createElement('div');
+          card.style.cssText = 'position:relative;z-index:2;background:linear-gradient(135deg,rgba(245,158,11,0.98),rgba(251,146,60,0.98));padding:20px 24px;border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,0.5);max-width:300px;text-align:center;';
+
+          var counter = '<div style="font-size:11px;color:rgba(0,0,0,0.5);margin-bottom:8px;">' + (currentStep + 1) + ' / ' + steps.length + '</div>';
+          var icon = step.icon ? '<div style="font-size:32px;margin-bottom:8px;">' + step.icon + '</div>' : '';
+          var title = '<div style="font-size:16px;font-weight:800;color:#000;margin-bottom:10px;">' + step.title + '</div>';
+          var text = '<div style="font-size:13px;color:rgba(0,0,0,0.8);line-height:1.5;">' + step.text + '</div>';
+
+          var btnText = currentStep < steps.length - 1 ? 'Дальше' : 'Понятно!';
+          var btn = '<button id="onboarding-next" style="margin-top:16px;padding:12px 28px;background:#000;color:#f59e0b;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">' + btnText + '</button>';
+
+          var skipBtn = currentStep < steps.length - 1 ? '<div id="onboarding-skip" style="margin-top:10px;font-size:12px;color:rgba(0,0,0,0.4);cursor:pointer;">Пропустить</div>' : '';
+
+          card.innerHTML = counter + icon + title + text + btn + skipBtn;
+          overlay.appendChild(card);
+
+          document.body.appendChild(overlay);
+
+          document.getElementById('onboarding-next').addEventListener('click', function() {
+            currentStep++;
+            renderStep();
+          });
+
+          var skipEl = document.getElementById('onboarding-skip');
+          if (skipEl) {
+            skipEl.addEventListener('click', function() {
+              var o = document.getElementById('onboarding-overlay');
+              if (o) o.remove();
+              localStorage.setItem(ONBOARDING_KEY, '1');
+            });
+          }
+        }
+
+        // Запускаем с задержкой чтобы UI успел отрисоваться
+        setTimeout(renderStep, 1500);
+      }
+
+      // Запускаем при готовности
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', showOnboarding);
+      } else {
+        showOnboarding();
+      }
+    })();
   </script>
 
   <!-- DRAWER: Быстрые ответы (свайп справа) -->
@@ -9095,8 +9285,8 @@
 
       <!-- Кнопка добавления -->
       <div class="drawer-footer">
-        <button id="drawer-add-template" class="btn-gold w-full">
-          <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+        <button id="drawer-add-template" class="drawer-add-btn">
+          <i data-lucide="plus" class="w-4 h-4"></i>
           Добавить шаблон
         </button>
       </div>

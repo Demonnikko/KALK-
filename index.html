@@ -228,8 +228,8 @@
 
     .form-input {
       width: 100%;
-      background: rgba(255, 255, 255, .08);
-      border: 1.5px solid rgba(255, 255, 255, .12);
+      background: rgba(255, 255, 255, .12);
+      border: 1.5px solid rgba(255, 255, 255, .18);
       border-radius: 14px;
       padding: 14px 16px;
       font-size: 15px;
@@ -605,8 +605,8 @@
     }
 
     .edit-input {
-      background: rgba(255, 255, 255, .08);
-      border: 1.5px solid rgba(255, 255, 255, .12);
+      background: rgba(255, 255, 255, .12);
+      border: 1.5px solid rgba(255, 255, 255, .18);
       border-radius: 12px;
       padding: 10px 12px;
       font-size: 14px;
@@ -1918,9 +1918,14 @@
         </div>
       </div>
 
-      <button id="btn-settings" class="btn-icon" aria-label="Настройки">
-        <i data-lucide="settings" class="w-6 h-6 text-slate-200"></i>
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="btn-quick-replies" class="btn-icon" aria-label="Быстрые ответы">
+          <i data-lucide="message-square-text" class="w-5 h-5 text-slate-200"></i>
+        </button>
+        <button id="btn-settings" class="btn-icon" aria-label="Настройки">
+          <i data-lucide="settings" class="w-6 h-6 text-slate-200"></i>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -2392,6 +2397,7 @@
 
         <div class="glass rounded-2xl p-5">
           <div class="text-base font-extrabold text-white mb-3">Услуги</div>
+          <input id="admin-search-services" type="text" class="form-input mb-3" placeholder="Поиск услуг..." style="min-height:40px;padding:10px 14px;font-size:13px;" />
           <div id="settings-services-list" class="space-y-2"></div>
         </div>
 
@@ -3561,6 +3567,21 @@
         DataManager.updateBackupIndicator('saved');
 
         // Автобэкапы отключены по запросу пользователя
+
+        // Поиск по услугам в настройках
+        const searchSvc = document.getElementById('admin-search-services');
+        if (searchSvc) {
+          searchSvc.addEventListener('input', () => {
+            const q = (searchSvc.value || '').toLowerCase().trim();
+            const container = document.getElementById('settings-services-list');
+            if (!container) return;
+            container.querySelectorAll(':scope > div').forEach(section => {
+              if (!q) { section.style.display = ''; return; }
+              const text = section.textContent.toLowerCase();
+              section.style.display = text.includes(q) ? '' : 'none';
+            });
+          });
+        }
       }
     };
 
@@ -3971,6 +3992,11 @@
       },
 
       setupEventListeners: () => {
+        // Quick replies button in header
+        document.getElementById('btn-quick-replies')?.addEventListener('click', () => {
+          if (typeof QuickResponsesDrawer !== 'undefined' && QuickResponsesDrawer.open) QuickResponsesDrawer.open();
+        });
+
         // Settings modal
         document.getElementById('btn-settings')?.addEventListener('click', App.toggleSettings);
         document.getElementById('btn-close-settings')?.addEventListener('click', App.toggleSettings);
@@ -4650,16 +4676,38 @@
             const nameDiv = Utils.createElement('div', 'text-base font-semibold text-white mb-1');
             nameDiv.textContent = item.name;
 
-            if (item.qty > 1) {
-              const qtySpan = Utils.createElement('span', 'text-amber-400 text-sm ml-2');
+            leftDiv.appendChild(nameDiv);
+
+            // Inline +/- для изменения количества
+            if (!item.name.startsWith('ПАКЕТ:')) {
+              const qtyRow = Utils.createElement('div', 'flex items-center gap-2 mt-1');
+              const qtyMinus = Utils.createElement('button', 'w-6 h-6 rounded-md bg-white/10 text-slate-300 flex items-center justify-center text-xs font-bold');
+              qtyMinus.textContent = '−';
+              qtyMinus.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (item.qty > 1) { State.cart[idx].qty--; App.renderCart(); App.calc(); }
+              });
+              const qtyLabel = Utils.createElement('span', 'text-sm text-amber-400 font-bold mono min-w-[20px] text-center');
+              qtyLabel.textContent = item.qty;
+              const qtyPlus = Utils.createElement('button', 'w-6 h-6 rounded-md bg-white/10 text-slate-300 flex items-center justify-center text-xs font-bold');
+              qtyPlus.textContent = '+';
+              qtyPlus.addEventListener('click', (e) => {
+                e.stopPropagation();
+                State.cart[idx].qty++;
+                App.renderCart(); App.calc();
+              });
+              const pricePerOne = Utils.createElement('span', 'text-xs text-slate-500 mono ml-1');
+              pricePerOne.textContent = `× ${Utils.formatPrice(item.price)} ₽`;
+              qtyRow.appendChild(qtyMinus);
+              qtyRow.appendChild(qtyLabel);
+              qtyRow.appendChild(qtyPlus);
+              qtyRow.appendChild(pricePerOne);
+              leftDiv.appendChild(qtyRow);
+            } else if (item.qty > 1) {
+              const qtySpan = Utils.createElement('span', 'text-amber-400 text-sm');
               qtySpan.textContent = `×${item.qty}`;
               nameDiv.appendChild(qtySpan);
             }
-
-            const priceDiv = Utils.createElement('div', 'text-sm text-slate-400 mono');
-            priceDiv.textContent = `${Utils.formatPrice(item.price)} ₽`;
-
-            leftDiv.appendChild(nameDiv);
 
             // Описание услуги (если есть)
             if (item.description && item.description.trim()) {
@@ -4667,8 +4715,6 @@
               descDiv.textContent = item.description;
               leftDiv.appendChild(descDiv);
             }
-
-            leftDiv.appendChild(priceDiv);
 
             const rightDiv = Utils.createElement('div', 'flex items-center gap-4 flex-shrink-0');
 

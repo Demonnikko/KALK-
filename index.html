@@ -1423,6 +1423,44 @@
     .swipe-indicator.visible {
       opacity: 1;
     }
+
+    /* iOS-style toggle switch */
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .toggle-switch .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      transition: background 0.25s ease;
+    }
+    .toggle-switch input:checked + .toggle-track {
+      background: #f59e0b;
+    }
+    .toggle-switch .toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.25s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .toggle-switch input:checked ~ .toggle-knob {
+      transform: translateX(18px);
+    }
   </style>
   <style>
     #premium-dialog-overlay {
@@ -1895,53 +1933,66 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm text-slate-400 font-bold mb-2 block">Гости</label>
-              <select id="inp-guests" class="form-input">
-                <option value="0">Без доплаты</option>
-                <option value="1000">+1 000 ₽</option>
-                <option value="2000">+2 000 ₽</option>
-                <option value="3000">+3 000 ₽</option>
-              </select>
-            </div>
-
-            <div class="flex items-end">
-              <div class="flex flex-col gap-2 w-full">
-                <label
-                  class="flex items-center gap-3 text-sm text-slate-200 font-bold bg-white/5 px-4 py-2 rounded-2xl w-full cursor-pointer hover:bg-white/10 transition">
-                  <input type="checkbox" id="inp-tax" class="accent-amber-500 w-5 h-5" />
-                  <span id="lbl-cashless">Оплата по безналу</span>
-                </label>
-                <label
-                  class="flex items-center gap-3 text-sm text-slate-200 font-bold bg-white/5 px-4 py-2 rounded-2xl w-full cursor-pointer hover:bg-white/10 transition">
-                  <input type="checkbox" id="inp-agency" class="accent-amber-500 w-5 h-5" />
-                  <div class="flex items-center justify-between w-full gap-2">
-                    <span id="lbl-agency">Комиссия агентства</span>
-
-                  </div>
-                </label>
-
-                <label
-                  class="flex items-center gap-3 text-sm text-slate-200 font-bold bg-white/5 px-4 py-2 rounded-2xl w-full cursor-pointer hover:bg-white/10 transition">
-                  <input type="checkbox" id="inp-show-bonuses" class="accent-amber-500 w-5 h-5" checked />
-                  <span>Показывать бонусы в КП</span>
-                </label>
-
-                <label
-                  class="flex items-center gap-3 text-sm text-slate-200 font-bold bg-white/5 px-4 py-2 rounded-2xl w-full cursor-pointer hover:bg-white/10 transition">
-                  <input type="checkbox" id="inp-burn" class="accent-amber-500 w-5 h-5" />
-                  <span id="lbl-burn">Предложение действует 48 часов</span>
-                </label>
-
-                <label
-                  class="flex items-center gap-3 text-sm text-slate-200 font-bold bg-white/5 px-4 py-2 rounded-2xl w-full cursor-pointer hover:bg-white/10 transition">
-                  <input type="checkbox" id="inp-show-links" class="accent-amber-500 w-5 h-5" checked />
-                  <span>Показывать ссылки в КП</span>
-                </label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
+              <div class="flex items-center gap-2 min-w-0">
+                <i data-lucide="credit-card" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
+                <span id="lbl-cashless" class="text-xs text-slate-300 font-semibold truncate">Безнал</span>
               </div>
-            </div>
+              <div class="toggle-switch">
+                <input type="checkbox" id="inp-tax" />
+                <div class="toggle-track"></div>
+                <div class="toggle-knob"></div>
+              </div>
+            </label>
 
+            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
+              <div class="flex items-center gap-2 min-w-0">
+                <i data-lucide="building-2" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
+                <span id="lbl-agency" class="text-xs text-slate-300 font-semibold truncate">Агентство</span>
+              </div>
+              <div class="toggle-switch">
+                <input type="checkbox" id="inp-agency" />
+                <div class="toggle-track"></div>
+                <div class="toggle-knob"></div>
+              </div>
+            </label>
+
+            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
+              <div class="flex items-center gap-2 min-w-0">
+                <i data-lucide="gift" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
+                <span class="text-xs text-slate-300 font-semibold truncate">Бонусы в КП</span>
+              </div>
+              <div class="toggle-switch">
+                <input type="checkbox" id="inp-show-bonuses" checked />
+                <div class="toggle-track"></div>
+                <div class="toggle-knob"></div>
+              </div>
+            </label>
+
+            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
+              <div class="flex items-center gap-2 min-w-0">
+                <i data-lucide="flame" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
+                <span id="lbl-burn" class="text-xs text-slate-300 font-semibold truncate">48 часов</span>
+              </div>
+              <div class="toggle-switch">
+                <input type="checkbox" id="inp-burn" />
+                <div class="toggle-track"></div>
+                <div class="toggle-knob"></div>
+              </div>
+            </label>
+
+            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition col-span-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <i data-lucide="link" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
+                <span class="text-xs text-slate-300 font-semibold truncate">Ссылки в КП</span>
+              </div>
+              <div class="toggle-switch">
+                <input type="checkbox" id="inp-show-links" checked />
+                <div class="toggle-track"></div>
+                <div class="toggle-knob"></div>
+              </div>
+            </label>
           </div>
         </div>
 
@@ -2804,7 +2855,6 @@
         discount: 0,
         travel: 0,
         manPrice: 0,
-        guestPrice: 0,
         tax: 0,
         k: 1
       },
@@ -3771,8 +3821,7 @@
           }, 250));
         }
 
-        // Guests & Tax
-        document.getElementById('inp-guests')?.addEventListener('change', App.calc);
+        // Tax
         document.getElementById('inp-tax')?.addEventListener('change', App.calc);
 
         document.getElementById('inp-agency')?.addEventListener('change', App.calc);
@@ -4553,18 +4602,6 @@
               }
             }
           });
-          if (d.guestPrice > 0) mkRow('Гости', d.guestPrice, {
-            sign: '+',
-            tone: 'default',
-            deletable: true,
-            onDelete: () => {
-              const guestsInput = document.getElementById('inp-guests');
-              if (guestsInput) {
-                guestsInput.value = 0;
-                guestsInput.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-            }
-          });
           if (d.manPrice > 0) {
             const manName = Utils.sanitizeText(document.getElementById('inp-manual-name')?.value, 100) || 'Дополнение';
             mkRow(manName, d.manPrice, {
@@ -4634,18 +4671,6 @@
             if (citySelect) {
               citySelect.value = '';
               citySelect.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-          }
-        });
-        if (d.guestPrice > 0) mkRow('Гости', d.guestPrice, {
-          sign: '+',
-          tone: 'default',
-          deletable: true,
-          onDelete: () => {
-            const guestsInput = document.getElementById('inp-guests');
-            if (guestsInput) {
-              guestsInput.value = 0;
-              guestsInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
           }
         });
@@ -4734,9 +4759,6 @@
             const manualPriceInput = document.getElementById('inp-manual-price');
             const manPrice = manualPriceInput ? Utils.sanitizeNumber(manualPriceInput.value, 0, 999999, 0) : 0;
 
-            const guestsSelect = document.getElementById('inp-guests');
-            const guestPrice = guestsSelect ? Utils.sanitizeNumber(guestsSelect.value, 0, 999999, 0) : 0;
-
             const taxCheckbox = document.getElementById('inp-tax');
             const useTax = taxCheckbox ? taxCheckbox.checked : false;
 
@@ -4745,7 +4767,7 @@
             const optimalPrice = Utils.prettyRound(tpl.optimal.price * k);
             const premiumPrice = Utils.prettyRound(tpl.premium.price * k);
 
-            const extras = travel + manPrice + guestPrice;
+            const extras = travel + manPrice;
 
             const basicPreTax = basicPrice + extras;
             const optimalPreTax = optimalPrice + extras;
@@ -4791,7 +4813,6 @@
               discount: 0,
               travel,
               manPrice,
-              guestPrice,
               k,
               isPackage: true,
               packageTemplate: tpl,
@@ -4907,13 +4928,10 @@
           const manualPriceInput = document.getElementById('inp-manual-price');
           const manPrice = manualPriceInput ? Utils.sanitizeNumber(manualPriceInput.value, 0, 999999, 0) : 0;
 
-          const guestsSelect = document.getElementById('inp-guests');
-          const guestPrice = guestsSelect ? Utils.sanitizeNumber(guestsSelect.value, 0, 999999, 0) : 0;
-
           const taxCheckbox = document.getElementById('inp-tax');
           const useTax = taxCheckbox ? taxCheckbox.checked : false;
 
-          let preTax = servicesTotal + travel + manPrice + guestPrice;
+          let preTax = servicesTotal + travel + manPrice;
           const cashlessPct = Utils.sanitizeNumber(DB.config?.cashlessPercent ?? 6, 0, 100, 6);
           const agencyPct = Utils.sanitizeNumber(DB.config?.agencyPercent ?? 15, 0, 99, 15);
 
@@ -4942,7 +4960,6 @@
             discount,
             travel,
             manPrice,
-            guestPrice,
             k,
             isPackage: false,
 
@@ -5058,9 +5075,6 @@
         const manualPriceInput = document.getElementById('inp-manual-price');
         const manPrice = manualPriceInput ? Utils.sanitizeNumber(manualPriceInput.value, 0, 999999, 0) : 0;
 
-        const guestsSelect = document.getElementById('inp-guests');
-        const guestPrice = guestsSelect ? Utils.sanitizeNumber(guestsSelect.value, 0, 999999, 0) : 0;
-
         const taxCheckbox = document.getElementById('inp-tax');
         const useTax = taxCheckbox ? taxCheckbox.checked : false;
 
@@ -5069,7 +5083,7 @@
 
         const computeFinal = (basePrice) => {
           const base = Utils.prettyRound(Utils.sanitizeNumber(basePrice, 0, 999999, 0) * k);
-          let total = base + travel + manPrice + guestPrice;
+          let total = base + travel + manPrice;
 
           if (useTax) total += Utils.prettyRound(total * (cashlessPct / 100));
           if (useAgency) total += Utils.prettyRound(total * (agencyPct / 100));
@@ -5316,7 +5330,6 @@
 
           // Общие доплаты
           const manPrice = Utils.sanitizeNumber(document.getElementById('inp-manual-price')?.value, 0, 999999, 0);
-          const guestPrice = Utils.sanitizeNumber(document.getElementById('inp-guests')?.value, 0, 999999, 0);
           const useTax = !!document.getElementById('inp-tax')?.checked;
           const useAgency = !!document.getElementById('inp-agency')?.checked;
           const cashlessPct = Utils.sanitizeNumber(DB.config?.cashlessPercent ?? 6, 0, 100, 6);
@@ -5352,10 +5365,9 @@
 
               // 3. Доплаты (разделить на количество услуг)
               const itemManPrice = Utils.prettyRound(manPrice / group.items.length);
-              const itemGuestPrice = Utils.prettyRound(guestPrice / group.items.length);
 
               // 4. Итого до налога
-              const preTax = servicePrice + travel + itemManPrice + itemGuestPrice;
+              const preTax = servicePrice + travel + itemManPrice;
 
               // 5. Безнал
               const tax = useTax ? Utils.prettyRound(preTax * (cashlessPct / 100)) : 0;

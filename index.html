@@ -196,8 +196,7 @@
     .glass {
       background: var(--panel);
       border: 1px solid var(--stroke);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      /* backdrop-filter убран — 21 элемент с blur перегревал GPU */
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
       overflow-x: hidden;
     }
@@ -270,6 +269,34 @@
       }
     }
 
+    /* На сенсорных экранах отключаем hover-трансформации — иначе при скролле элементы «прыгают» */
+    @media (hover: none) {
+      .mini-chip:hover,
+      .btn-gold:hover,
+      .btn-secondary:hover,
+      .btn-icon:hover,
+      .btn-qty:hover,
+      .btn-add:hover,
+      .btn-del-mini:hover,
+      .btn-export:hover,
+      .btn-import:hover,
+      .btn-backup:hover,
+      .backup-slot:hover,
+      #cart-list>div:hover,
+      .template-card:hover,
+      .rounding-btn:hover,
+      .rounding-btn-main:hover,
+      .rounding-btn-reset:hover,
+      .variant-card:hover,
+      .drawer-template-card:hover {
+        transform: none !important;
+        box-shadow: inherit !important;
+        background: inherit !important;
+        border-color: inherit !important;
+        filter: none !important;
+      }
+    }
+
     button {
       -webkit-user-select: none;
       user-select: none;
@@ -279,9 +306,7 @@
       transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
         background 0.2s ease-out,
         box-shadow 0.2s ease-out;
-      will-change: transform;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
+      /* will-change убран — экономия GPU-слоёв на мобильных */
     }
 
     .btn-gold {
@@ -296,7 +321,7 @@
       border: 1.5px solid rgba(245, 158, 11, .4);
       box-shadow: 0 12px 30px rgba(245, 158, 11, .2);
       min-height: 52px;
-      animation: goldGlow 4s ease-in-out infinite;
+      /* goldGlow infinite убрана — постоянная перерисовка box-shadow грела CPU */
     }
 
     .btn-gold:hover {
@@ -675,9 +700,7 @@
       transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
         background 0.2s ease-out,
         box-shadow 0.2s ease-out;
-      will-change: transform;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
+      /* will-change убран — экономия GPU-слоёв на мобильных */
     }
 
     #cart-list>div:hover {
@@ -700,9 +723,7 @@
       position: relative;
       overflow: hidden;
       min-height: 90px;
-      will-change: transform;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
+      /* will-change убран — экономия GPU-слоёв на мобильных */
     }
 
     .template-card:hover {
@@ -828,9 +849,7 @@
         box-shadow 0.25s ease-out;
       position: relative;
       min-height: 140px;
-      will-change: transform;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
+      /* will-change убран — экономия GPU-слоёв на мобильных */
     }
 
     .variant-card:hover {
@@ -1424,6 +1443,74 @@
       opacity: 1;
     }
 
+    /* Onboarding overlay */
+    .onboarding-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 99990;
+      transition: opacity 0.3s ease;
+    }
+    .onboarding-highlight {
+      position: relative;
+      z-index: 99991;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.6), 0 0 20px rgba(245, 158, 11, 0.3);
+      border-radius: 14px;
+    }
+    .onboarding-tooltip {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99992;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1.5px solid rgba(245, 158, 11, 0.4);
+      border-radius: 18px;
+      padding: 16px 20px;
+      max-width: 320px;
+      width: calc(100% - 32px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+    .onboarding-tooltip .ob-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #f59e0b;
+      margin-bottom: 6px;
+    }
+    .onboarding-tooltip .ob-text {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .onboarding-tooltip .ob-step {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 10px;
+    }
+    .onboarding-tooltip .ob-btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 20px;
+      background: #f59e0b;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+    }
+    .onboarding-tooltip .ob-skip {
+      display: inline-block;
+      margin-top: 12px;
+      margin-left: 10px;
+      padding: 8px 14px;
+      background: transparent;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
     /* iOS-style toggle switch */
     .toggle-switch {
       position: relative;
@@ -1822,17 +1909,13 @@
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center"
-          style="animation: iconPulse 3s ease-in-out infinite;">
+          >
           <i data-lucide="calculator" class="w-6 h-6 text-amber-400"></i>
         </div>
         <div>
           <div class="font-cinzel text-white tracking-wide text-lg">Illusionist OS</div>
           <div class="flex items-center gap-2">
             <span class="text-sm text-slate-400 font-semibold">Умный калькулятор</span>
-            <div id="backup-indicator" class="backup-status">
-              <span class="backup-dot"></span>
-              <span id="backup-status-text">Сохранено</span>
-            </div>
           </div>
         </div>
       </div>
@@ -2141,7 +2224,7 @@
           <div class="text-xs text-slate-500 mono" id="db-version-display">v2.0</div>
         </div>
 
-        <div class="grid grid-cols-3 gap-3 mb-5">
+        <div class="grid grid-cols-2 gap-3 mb-5">
           <button id="btn-export-data" class="btn-data btn-export">
             <i data-lucide="download" class="w-5 h-5"></i>
             <span>Экспорт</span>
@@ -2150,18 +2233,6 @@
             <i data-lucide="upload" class="w-5 h-5"></i>
             <span>Импорт</span>
           </button>
-          <button id="btn-create-backup" class="btn-data btn-backup">
-            <i data-lucide="save" class="w-5 h-5"></i>
-            <span>Бэкап</span>
-          </button>
-        </div>
-
-        <div class="mb-4">
-          <div class="text-sm text-slate-400 font-bold mb-3 flex items-center justify-between">
-            <span>Автобэкапы (5 слотов)</span>
-            <span class="text-xs text-slate-500" id="last-backup-time">—</span>
-          </div>
-          <div class="grid grid-cols-5 gap-2" id="backup-slots-container"></div>
         </div>
 
         <div class="bg-white/5 rounded-xl p-4">
@@ -2280,8 +2351,13 @@
           </div>
 
           <div class="text-xs text-slate-500 mb-2">Ключ активации</div>
-          <div id="license-key-display" class="font-mono text-sm text-slate-300 bg-black/20 rounded px-3 py-2">
-            ••••-••••-••••-••••
+          <div class="flex items-center gap-2">
+            <div id="license-key-display" class="font-mono text-sm text-slate-300 bg-black/20 rounded px-3 py-2 flex-1">
+              ••••-••••-••••-••••
+            </div>
+            <button id="btn-toggle-key" type="button" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition" aria-label="Показать/скрыть ключ">
+              <i data-lucide="eye-off" class="w-4 h-4 text-slate-400"></i>
+            </button>
           </div>
         </div>
 
@@ -2507,10 +2583,110 @@
         var main = document.getElementById('app-main');
         if (header) header.style.display = '';
         if (main) main.style.display = '';
+
+        // Запускаем пошаговое обучение при первом запуске
+        setTimeout(function() {
+          if (!localStorage.getItem('illusionist_onboarding_done')) {
+            window._startOnboarding && window._startOnboarding();
+          }
+        }, 600);
       }
       window.showApp = showApp;
 
+      // ============================================
+      // ПОШАГОВОЕ ОБУЧЕНИЕ ПРИ ПЕРВОМ ЗАПУСКЕ
+      // ============================================
+      (function() {
+        var steps = [
+          { el: '#inp-date',          title: 'Дата мероприятия',   text: 'Выберите дату проведения. Если дата попадает на праздник — цена автоматически увеличится.' },
+          { el: '#inp-time',          title: 'Время',              text: 'Укажите время начала или выберите «Без времени», если оно ещё не определено.' },
+          { el: '#inp-region',        title: 'Регион',             text: 'Выберите регион. Регионы и города добавляются в Настройках (шестерёнка сверху).' },
+          { el: '#inp-city',          title: 'Город',              text: 'Выберите город. От города зависит стоимость логистики.' },
+          { el: '#inp-cat',           title: 'Категория',          text: 'Выберите категорию услуг. Категории и цены настраиваются в Настройках.' },
+          { el: '#inp-svc',           title: 'Услуга',             text: 'Выберите конкретную услугу из списка. Её цена подставится автоматически.' },
+          { el: '#btn-add-service',   title: 'Добавить в корзину', text: 'Нажмите, чтобы добавить выбранную услугу в корзину. Можно добавить несколько услуг.' },
+          { el: '#btn-copy-quote',    title: 'Скопировать КП',     text: 'Формирует готовое коммерческое предложение и копирует в буфер обмена. Отправляйте клиенту!' },
+          { el: '#btn-settings',      title: 'Настройки',          text: 'Здесь добавляются регионы, услуги, цены, бонусы, способы оплаты и всё остальное.' }
+        ];
+
+        var currentStep = 0;
+        var overlay = null;
+        var tooltip = null;
+        var prevHighlight = null;
+
+        function cleanup() {
+          if (prevHighlight) prevHighlight.classList.remove('onboarding-highlight');
+          if (overlay) overlay.remove();
+          if (tooltip) tooltip.remove();
+          overlay = null;
+          tooltip = null;
+          prevHighlight = null;
+        }
+
+        function finish() {
+          cleanup();
+          localStorage.setItem('illusionist_onboarding_done', '1');
+        }
+
+        function showStep(i) {
+          cleanup();
+          if (i >= steps.length) { finish(); return; }
+
+          var step = steps[i];
+          var target = document.querySelector(step.el);
+          if (!target) { showStep(i + 1); return; }
+
+          currentStep = i;
+
+          // Overlay
+          overlay = document.createElement('div');
+          overlay.className = 'onboarding-overlay';
+          document.body.appendChild(overlay);
+
+          // Highlight target
+          target.classList.add('onboarding-highlight');
+          prevHighlight = target;
+
+          // Scroll target into view
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          // Tooltip
+          tooltip = document.createElement('div');
+          tooltip.className = 'onboarding-tooltip';
+
+          var rect = target.getBoundingClientRect();
+          var spaceBelow = window.innerHeight - rect.bottom;
+          if (spaceBelow > 200) {
+            tooltip.style.top = (rect.bottom + 12) + 'px';
+          } else {
+            tooltip.style.bottom = (window.innerHeight - rect.top + 12) + 'px';
+          }
+
+          tooltip.innerHTML =
+            '<div class="ob-title">' + step.title + '</div>' +
+            '<div class="ob-text">' + step.text + '</div>' +
+            '<div class="ob-step">Шаг ' + (i + 1) + ' из ' + steps.length + '</div>' +
+            '<button class="ob-btn" id="ob-next">' + (i === steps.length - 1 ? 'Готово' : 'Далее') + '</button>' +
+            '<button class="ob-skip" id="ob-skip">Пропустить</button>';
+
+          document.body.appendChild(tooltip);
+
+          document.getElementById('ob-next').onclick = function() { showStep(i + 1); };
+          document.getElementById('ob-skip').onclick = finish;
+          overlay.onclick = function() { showStep(i + 1); };
+        }
+
+        window._startOnboarding = function() { showStep(0); };
+      })();
+
       window.addEventListener('load', async function () {
+        // Автовыделение текста в числовых полях при фокусе — удобно заменить значение
+        document.addEventListener('focus', function (e) {
+          if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'number') {
+            setTimeout(function () { e.target.select(); }, 0);
+          }
+        }, true);
+
         // ПЕРВЫМ ДЕЛОМ проверяем устройство
         if (!checkDevice()) {
           return; // Если десктоп - не загружаем приложение
@@ -3341,7 +3517,7 @@
         DataManager.updateStats();
         DataManager.updateBackupIndicator('saved');
 
-        setInterval(DataManager.autoBackup, AUTO_BACKUP_INTERVAL);
+        // Автобэкапы отключены по запросу пользователя
       }
     };
 
@@ -3451,7 +3627,7 @@
     // KP BUFFER (Сохранённые коммерческие предложения)
     // ============================================
     const KPBuffer = {
-      MAX_ITEMS: 25,
+      MAX_ITEMS: 3,
       // Авто-«самоуважение»: записи, которыми давно не пользовались, уходят сами
       TTL_DAYS: 30,
       TTL_MS: 30 * 24 * 60 * 60 * 1000,
@@ -3815,8 +3991,7 @@
         const manualPriceInput = document.getElementById('inp-manual-price');
         if (manualPriceInput) {
           manualPriceInput.addEventListener('input', Utils.debounce(() => {
-            const value = Utils.sanitizeNumber(manualPriceInput.value, 0, 999999);
-            manualPriceInput.value = value || '';
+            if (manualPriceInput.value === '' || manualPriceInput.value === '-') return;
             App.calc();
           }, 250));
         }
@@ -3886,39 +4061,54 @@
         if (depositInput) {
           depositInput.value = DB.config?.deposit ?? 30;
           depositInput.addEventListener('input', Utils.debounce(() => {
+            if (depositInput.value === '' || depositInput.value === '-') return;
             const value = Utils.sanitizeNumber(depositInput.value, 0, 100, 30);
-            depositInput.value = value;
             DB.config.deposit = value;
             Storage.save();
             DataManager.updateStats();
           }, 350));
+          depositInput.addEventListener('blur', () => {
+            if (depositInput.value === '' || isNaN(parseInt(depositInput.value))) {
+              depositInput.value = DB.config?.deposit ?? 30;
+            }
+          });
         }
         const cashlessInput = document.getElementById('cfg-cashless-percent');
         if (cashlessInput) {
           cashlessInput.value = DB.config?.cashlessPercent ?? 6;
           cashlessInput.addEventListener('input', Utils.debounce(() => {
+            if (cashlessInput.value === '' || cashlessInput.value === '-') return;
             const value = Utils.sanitizeNumber(cashlessInput.value, 0, 100, 6);
-            cashlessInput.value = value;
             DB.config.cashlessPercent = value;
             Storage.save();
             DataManager.updateStats();
             App.updatePercentLabels();
             App.calc();
           }, 350));
+          cashlessInput.addEventListener('blur', () => {
+            if (cashlessInput.value === '' || isNaN(parseInt(cashlessInput.value))) {
+              cashlessInput.value = DB.config?.cashlessPercent ?? 6;
+            }
+          });
         }
 
         const agencyInput = document.getElementById('cfg-agency-percent');
         if (agencyInput) {
           agencyInput.value = DB.config?.agencyPercent ?? 15;
           agencyInput.addEventListener('input', Utils.debounce(() => {
+            if (agencyInput.value === '' || agencyInput.value === '-') return;
             const value = Utils.sanitizeNumber(agencyInput.value, 0, 99, 15);
-            agencyInput.value = value;
             DB.config.agencyPercent = value;
             Storage.save();
             DataManager.updateStats();
             App.updatePercentLabels();
             App.calc();
           }, 350));
+          agencyInput.addEventListener('blur', () => {
+            if (agencyInput.value === '' || isNaN(parseInt(agencyInput.value))) {
+              agencyInput.value = DB.config?.agencyPercent ?? 15;
+            }
+          });
         }
 
         // СКИДКА ЗА ОБЪЁМ
@@ -3936,24 +4126,34 @@
         if (bulkPercentInput) {
           bulkPercentInput.value = DB.config?.bulkDiscountPercent ?? 10;
           bulkPercentInput.addEventListener('input', Utils.debounce(() => {
+            if (bulkPercentInput.value === '' || bulkPercentInput.value === '-') return;
             const value = Utils.sanitizeNumber(bulkPercentInput.value, 0, 100, 10);
-            bulkPercentInput.value = value;
             DB.config.bulkDiscountPercent = value;
             Storage.save();
             App.calc();
           }, 350));
+          bulkPercentInput.addEventListener('blur', () => {
+            if (bulkPercentInput.value === '' || isNaN(parseInt(bulkPercentInput.value))) {
+              bulkPercentInput.value = DB.config?.bulkDiscountPercent ?? 10;
+            }
+          });
         }
 
         const bulkMinInput = document.getElementById('cfg-bulk-discount-min');
         if (bulkMinInput) {
           bulkMinInput.value = DB.config?.bulkDiscountMinServices ?? 2;
           bulkMinInput.addEventListener('input', Utils.debounce(() => {
+            if (bulkMinInput.value === '' || bulkMinInput.value === '-') return;
             const value = Utils.sanitizeNumber(bulkMinInput.value, 1, 100, 2);
-            bulkMinInput.value = value;
             DB.config.bulkDiscountMinServices = value;
             Storage.save();
             App.calc();
           }, 350));
+          bulkMinInput.addEventListener('blur', () => {
+            if (bulkMinInput.value === '' || isNaN(parseInt(bulkMinInput.value))) {
+              bulkMinInput.value = DB.config?.bulkDiscountMinServices ?? 2;
+            }
+          });
         }
 
 
@@ -3970,34 +4170,49 @@
         if (burnPriceInput) {
           burnPriceInput.value = DB.config?.burnBonusPrice ?? 15000;
           burnPriceInput.addEventListener('input', Utils.debounce(() => {
+            if (burnPriceInput.value === '' || burnPriceInput.value === '-') return;
             const value = Utils.sanitizeNumber(burnPriceInput.value, 0, 99999999, 15000);
-            burnPriceInput.value = value;
             DB.config.burnBonusPrice = value;
             Storage.save();
           }, 350));
+          burnPriceInput.addEventListener('blur', () => {
+            if (burnPriceInput.value === '' || isNaN(parseInt(burnPriceInput.value))) {
+              burnPriceInput.value = DB.config?.burnBonusPrice ?? 15000;
+            }
+          });
         }
 
         const burnDiscountPriceInput = document.getElementById('cfg-burn-discount-price');
         if (burnDiscountPriceInput) {
           burnDiscountPriceInput.value = DB.config?.burnBonusDiscountPrice ?? 0;
           burnDiscountPriceInput.addEventListener('input', Utils.debounce(() => {
+            if (burnDiscountPriceInput.value === '' || burnDiscountPriceInput.value === '-') return;
             const value = Utils.sanitizeNumber(burnDiscountPriceInput.value, 0, 99999999, 0);
-            burnDiscountPriceInput.value = value;
             DB.config.burnBonusDiscountPrice = value;
             Storage.save();
           }, 350));
+          burnDiscountPriceInput.addEventListener('blur', () => {
+            if (burnDiscountPriceInput.value === '' || isNaN(parseInt(burnDiscountPriceInput.value))) {
+              burnDiscountPriceInput.value = DB.config?.burnBonusDiscountPrice ?? 0;
+            }
+          });
         }
 
         const burnHoursInput = document.getElementById('cfg-burn-hours');
         if (burnHoursInput) {
           burnHoursInput.value = DB.config?.burnHours ?? 48;
           burnHoursInput.addEventListener('input', Utils.debounce(() => {
+            if (burnHoursInput.value === '' || burnHoursInput.value === '-') return;
             const value = Utils.sanitizeNumber(burnHoursInput.value, 1, 240, 48);
-            burnHoursInput.value = value;
             DB.config.burnHours = value;
             Storage.save();
             App.updateBurnLabel();
           }, 350));
+          burnHoursInput.addEventListener('blur', () => {
+            if (burnHoursInput.value === '' || isNaN(parseInt(burnHoursInput.value))) {
+              burnHoursInput.value = DB.config?.burnHours ?? 48;
+            }
+          });
         }
 
         App.updatePercentLabels();
@@ -6062,14 +6277,34 @@
         });
       },
 
+      _licenseKeyVisible: false,
+      _licenseFullKey: '',
+
       updateLicenseStatus: async () => {
         const statusBadge = document.getElementById('license-status-badge');
         const keyDisplay = document.getElementById('license-key-display');
+        const toggleBtn = document.getElementById('btn-toggle-key');
 
         if (!statusBadge || !keyDisplay) return;
 
+        // Настраиваем кнопку показа/скрытия ключа
+        if (toggleBtn && !toggleBtn._bound) {
+          toggleBtn._bound = true;
+          toggleBtn.addEventListener('click', () => {
+            App._licenseKeyVisible = !App._licenseKeyVisible;
+            const icon = toggleBtn.querySelector('i');
+            if (App._licenseKeyVisible && App._licenseFullKey) {
+              keyDisplay.textContent = App._licenseFullKey;
+              if (icon) icon.setAttribute('data-lucide', 'eye');
+            } else {
+              keyDisplay.textContent = '••••-••••-••••-••••';
+              if (icon) icon.setAttribute('data-lucide', 'eye-off');
+            }
+            _debouncedCreateIcons();
+          });
+        }
+
         try {
-          // Проверяем есть ли функция checkActivation
           if (typeof checkActivation !== 'function') {
             statusBadge.textContent = '⚠️ Ошибка проверки';
             statusBadge.className = 'text-sm font-bold text-red-400';
@@ -6079,36 +6314,38 @@
           const status = await checkActivation();
 
           if (status === true) {
-            // Активирована
             statusBadge.textContent = '✅ Активирована';
             statusBadge.className = 'text-sm font-bold text-emerald-400';
 
-            // Показываем замаскированный ключ
+            // Сохраняем полный ключ, но показываем замаскированный
             const stored = localStorage.getItem('illusionist_license');
             if (stored) {
               try {
                 const data = JSON.parse(atob(stored));
-                const key = data.key || '';
-                const parts = key.split('-');
-                if (parts.length === 4) {
-                  keyDisplay.textContent = `${parts[0]}-${parts[1]}-••••-••••`;
-                } else {
-                  keyDisplay.textContent = '••••-••••-••••-••••';
-                }
+                App._licenseFullKey = data.key || '';
               } catch (e) {
-                keyDisplay.textContent = '••••-••••-••••-••••';
+                App._licenseFullKey = '';
               }
             }
+            // По умолчанию ключ скрыт
+            keyDisplay.textContent = '••••-••••-••••-••••';
+            App._licenseKeyVisible = false;
+            if (toggleBtn) {
+              toggleBtn.style.display = '';
+              const icon = toggleBtn.querySelector('i');
+              if (icon) icon.setAttribute('data-lucide', 'eye-off');
+              _debouncedCreateIcons();
+            }
           } else if (status === 'expired') {
-            // Истекла
             statusBadge.textContent = '⏰ Истекла';
             statusBadge.className = 'text-sm font-bold text-orange-400';
             keyDisplay.textContent = 'Требуется обновление';
+            if (toggleBtn) toggleBtn.style.display = 'none';
           } else {
-            // Не активирована
             statusBadge.textContent = '❌ Не активирована';
             statusBadge.className = 'text-sm font-bold text-red-400';
             keyDisplay.textContent = 'Требуется активация';
+            if (toggleBtn) toggleBtn.style.display = 'none';
           }
         } catch (e) {
           statusBadge.textContent = '⚠️ Ошибка';
@@ -6236,6 +6473,18 @@
       App.init();
       // Отправляем накопленную очередь синхронизации
       setTimeout(() => App._processSyncQueue(), 3000);
+
+      // Отключаем Tailwind MutationObserver после полной загрузки —
+      // он реагирует на КАЖДОЕ изменение DOM и генерирует CSS, что грузит CPU постоянно
+      setTimeout(() => {
+        if (window.tailwind && window.tailwind._observer) {
+          window.tailwind._observer.disconnect();
+        }
+        // Tailwind Play CDN использует внутренний observer
+        document.querySelectorAll('style[data-tailwind]').forEach(el => {
+          if (el._observer) el._observer.disconnect();
+        });
+      }, 5000);
     });
 
 
@@ -9180,127 +9429,6 @@
       console.log('📳 Haptic feedback module loaded');
     })();
 
-    // ============================================
-    // ПОШАГОВЫЙ ОНБОРДИНГ ДЛЯ НОВЫХ ПОЛЬЗОВАТЕЛЕЙ
-    // ============================================
-    (function() {
-      var ONBOARDING_KEY = 'calculator_onboarding_shown';
-
-      var steps = [
-        {
-          target: '#btn-add-service',
-          title: 'Добавь услугу',
-          text: 'Выбери услугу из списка, укажи количество и нажми "Добавить". Цены подтянутся из настроек.',
-          position: 'bottom'
-        },
-        {
-          target: '#btn-copy-quote',
-          title: 'Скопируй КП',
-          text: 'Когда всё добавил - жми сюда. Готовое коммерческое предложение скопируется в буфер, отправляй клиенту.',
-          position: 'top'
-        },
-        {
-          target: null,
-          title: 'Быстрые ответы',
-          text: 'Свайпни влево от правого края экрана - откроются шаблоны быстрых ответов. Создай свои и отвечай клиентам в два клика.',
-          position: 'center',
-          icon: '👈'
-        },
-        {
-          target: null,
-          title: 'Настройки',
-          text: 'Прокрути вниз - там цены, бонусы, пакеты, логистика. Настрой под себя один раз, дальше всё считается автоматически.',
-          position: 'center',
-          icon: '⚙️'
-        }
-      ];
-
-      function showOnboarding() {
-        if (localStorage.getItem(ONBOARDING_KEY)) return;
-
-        var currentStep = 0;
-
-        function renderStep() {
-          // Убираем старый оверлей
-          var old = document.getElementById('onboarding-overlay');
-          if (old) old.remove();
-
-          if (currentStep >= steps.length) {
-            localStorage.setItem(ONBOARDING_KEY, '1');
-            return;
-          }
-
-          var step = steps[currentStep];
-          var overlay = document.createElement('div');
-          overlay.id = 'onboarding-overlay';
-          overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-
-          // Затемнение
-          var bg = document.createElement('div');
-          bg.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);';
-          overlay.appendChild(bg);
-
-          // Подсветка целевого элемента
-          if (step.target) {
-            var el = document.querySelector(step.target);
-            if (el) {
-              var rect = el.getBoundingClientRect();
-              var highlight = document.createElement('div');
-              highlight.style.cssText = 'position:fixed;border:2px solid #f59e0b;border-radius:12px;box-shadow:0 0 0 4000px rgba(0,0,0,0.8),0 0 20px rgba(245,158,11,0.5);z-index:1;';
-              highlight.style.top = (rect.top - 6) + 'px';
-              highlight.style.left = (rect.left - 6) + 'px';
-              highlight.style.width = (rect.width + 12) + 'px';
-              highlight.style.height = (rect.height + 12) + 'px';
-              overlay.appendChild(highlight);
-              bg.style.background = 'transparent';
-            }
-          }
-
-          // Карточка подсказки
-          var card = document.createElement('div');
-          card.style.cssText = 'position:relative;z-index:2;background:linear-gradient(135deg,rgba(245,158,11,0.98),rgba(251,146,60,0.98));padding:20px 24px;border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,0.5);max-width:300px;text-align:center;';
-
-          var counter = '<div style="font-size:11px;color:rgba(0,0,0,0.5);margin-bottom:8px;">' + (currentStep + 1) + ' / ' + steps.length + '</div>';
-          var icon = step.icon ? '<div style="font-size:32px;margin-bottom:8px;">' + step.icon + '</div>' : '';
-          var title = '<div style="font-size:16px;font-weight:800;color:#000;margin-bottom:10px;">' + step.title + '</div>';
-          var text = '<div style="font-size:13px;color:rgba(0,0,0,0.8);line-height:1.5;">' + step.text + '</div>';
-
-          var btnText = currentStep < steps.length - 1 ? 'Дальше' : 'Понятно!';
-          var btn = '<button id="onboarding-next" style="margin-top:16px;padding:12px 28px;background:#000;color:#f59e0b;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">' + btnText + '</button>';
-
-          var skipBtn = currentStep < steps.length - 1 ? '<div id="onboarding-skip" style="margin-top:10px;font-size:12px;color:rgba(0,0,0,0.4);cursor:pointer;">Пропустить</div>' : '';
-
-          card.innerHTML = counter + icon + title + text + btn + skipBtn;
-          overlay.appendChild(card);
-
-          document.body.appendChild(overlay);
-
-          document.getElementById('onboarding-next').addEventListener('click', function() {
-            currentStep++;
-            renderStep();
-          });
-
-          var skipEl = document.getElementById('onboarding-skip');
-          if (skipEl) {
-            skipEl.addEventListener('click', function() {
-              var o = document.getElementById('onboarding-overlay');
-              if (o) o.remove();
-              localStorage.setItem(ONBOARDING_KEY, '1');
-            });
-          }
-        }
-
-        // Запускаем с задержкой чтобы UI успел отрисоваться
-        setTimeout(renderStep, 1500);
-      }
-
-      // Запускаем при готовности
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', showOnboarding);
-      } else {
-        showOnboarding();
-      }
-    })();
   </script>
 
   <!-- DRAWER: Быстрые ответы (свайп справа) -->

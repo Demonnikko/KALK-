@@ -1,6 +1,6 @@
 // Service Worker для Illusionist Calculator
 // Версия: 11.0 (FULL OFFLINE WITH LOCAL DEPENDENCIES)
-const CACHE_NAME = 'illusionist-calc-v12-offline';
+const CACHE_NAME = 'illusionist-calc-v13-offline';
 
 // Критические ресурсы
 const CORE_ASSETS = [

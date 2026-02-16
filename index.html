@@ -79,11 +79,11 @@
 
   <!-- Tailwind (локальный файл для офлайн работы) -->
   <link rel="preload" href="tailwind.min.js" as="script">
-  <script src="tailwind.min.js"></script>
+  <script defer src="tailwind.min.js"></script>
 
   <!-- Lucide (локальный файл для офлайн работы) -->
   <link rel="preload" href="lucide.min.js" as="script">
-  <script src="lucide.min.js"></script>
+  <script defer src="lucide.min.js"></script>
 
   <!-- Critical CSS для мгновенного рендера -->
   <style>
@@ -1627,6 +1627,22 @@
       }
       return 'DEV-' + Math.abs(hash).toString(36).toUpperCase();
     };
+  </script>
+
+  <!-- Оптимизация: дебаунс lucide.createIcons() -->
+  <script>
+    (function() {
+      var _lucideTimer = null;
+      window._debouncedCreateIcons = function() {
+        if (_lucideTimer) return;
+        _lucideTimer = requestAnimationFrame(function() {
+          _lucideTimer = null;
+          if (window.lucide && typeof lucide.createIcons === 'function') {
+            _debouncedCreateIcons();
+          }
+        });
+      };
+    })();
   </script>
 
 </head>
@@ -3634,7 +3650,7 @@
           el.appendChild(card);
         });
 
-        if (window.lucide) lucide.createIcons();
+        _debouncedCreateIcons();
       }
     };
 
@@ -3664,12 +3680,12 @@
           if (window.requestIdleCallback) {
             requestIdleCallback(() => {
               App.renderParticles();
-              if (window.lucide) lucide.createIcons();
+              _debouncedCreateIcons();
             }, { timeout: 2000 });
           } else {
             setTimeout(() => {
               App.renderParticles();
-              if (window.lucide) lucide.createIcons();
+              _debouncedCreateIcons();
             }, 100);
           }
 
@@ -3896,9 +3912,7 @@
         if (burnTitleInput) {
           burnTitleInput.value = DB.config?.burnBonusTitle ?? "Появление Гендиректора";
           burnTitleInput.addEventListener('input', Utils.debounce(() => {
-            const v = Utils.sanitizeText(burnTitleInput.value, 120) || "";
-            burnTitleInput.value = v;
-            DB.config.burnBonusTitle = v;
+            DB.config.burnBonusTitle = Utils.sanitizeText(burnTitleInput.value, 120) || "";
             Storage.save();
           }, 350));
         }
@@ -4000,7 +4014,7 @@
             App.updateCat();
 
             requestAnimationFrame(() => {
-              if (window.lucide) lucide.createIcons();
+              _debouncedCreateIcons();
               DataManager.updateStats();
               DataManager.renderBackupSlots();
               Admin.render();
@@ -4385,7 +4399,7 @@
           });
         });
 
-        if (window.lucide) lucide.createIcons();
+        _debouncedCreateIcons();
       },
 
       updateBulkSelection: () => {
@@ -4684,7 +4698,7 @@
         }
 
         // Рендерим иконки Lucide для кнопок удаления
-        if (window.lucide) lucide.createIcons();
+        _debouncedCreateIcons();
       },
 
       calc: () => {
@@ -5549,7 +5563,7 @@
           KPBuffer.render();
 
           modal.classList.add('active');
-          if (window.lucide) lucide.createIcons();
+          _debouncedCreateIcons();
         } else {
           modal.classList.remove('active');
           App.updateUI();
@@ -5946,7 +5960,7 @@
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        if (window.lucide) lucide.createIcons();
+        _debouncedCreateIcons();
 
         // Закрытие
         const closeForm = () => {
@@ -6107,7 +6121,9 @@
         window.addEventListener('resize', Utils.throttle(resize, 250));
         resize();
 
-        for (let i = 0; i < 40; i++) {
+        // Меньше частиц = меньше нагрев телефона
+        const particleCount = 15;
+        for (let i = 0; i < particleCount; i++) {
           particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
@@ -6118,7 +6134,14 @@
           });
         }
 
-        function animate() {
+        let animationId = null;
+        let lastFrame = 0;
+        const frameInterval = 50; // ~20fps вместо 60fps — экономит CPU втрое
+        function animate(now) {
+          animationId = requestAnimationFrame(animate);
+          if (now - lastFrame < frameInterval) return;
+          lastFrame = now;
+
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           particles.forEach(p => {
             p.x += Math.cos(p.d) * p.s;
@@ -6135,9 +6158,16 @@
             ctx.globalAlpha = 0.3;
             ctx.fill();
           });
-          requestAnimationFrame(animate);
         }
-        animate();
+        animate(0);
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
+          } else {
+            if (!animationId) animate();
+          }
+        });
       }
     };
 
@@ -6155,7 +6185,7 @@
           Admin.renderBonuses();
           Admin.renderPayments();
           Admin.renderLinks();
-          if (window.lucide) lucide.createIcons();
+          _debouncedCreateIcons();
           DataManager.updateStats();
         } catch (err) {
         }
@@ -6267,7 +6297,7 @@
             Admin.addCitiesBulk(region);
           });
           content.appendChild(addCitiesBulkBtn);
-          lucide.createIcons();
+          _debouncedCreateIcons();
 
           const delRegionBtn = Utils.createElement(
             'button',
@@ -6418,7 +6448,7 @@
     `;
 
         document.body.appendChild(modal);
-        lucide.createIcons();
+        _debouncedCreateIcons();
 
         const list = modal.querySelector('#bulk-cities-list');
         let rowIndex = 0;
@@ -6451,7 +6481,7 @@
         </button>
       `;
           list.appendChild(row);
-          lucide.createIcons();
+          _debouncedCreateIcons();
 
           // Фокус на первый input
           row.querySelector('input[data-field="name"]').focus();
@@ -6602,7 +6632,7 @@
             Admin.addServicesBulk(category);
           });
           content.appendChild(addServicesBulkBtn);
-          lucide.createIcons();
+          _debouncedCreateIcons();
 
           const delCatBtn = Utils.createElement(
             'button',
@@ -6762,7 +6792,7 @@
     `;
 
         document.body.appendChild(modal);
-        lucide.createIcons();
+        _debouncedCreateIcons();
 
         const list = modal.querySelector('#bulk-services-list');
         let rowIndex = 0;
@@ -6795,7 +6825,7 @@
         </button>
       `;
           list.appendChild(row);
-          lucide.createIcons();
+          _debouncedCreateIcons();
 
           // Фокус на первый input
           row.querySelector('input[data-field="name"]').focus();
@@ -7540,7 +7570,7 @@
         container.appendChild(card);
       });
 
-      if (window.lucide) lucide.createIcons();
+      _debouncedCreateIcons();
     }
 
     // Создание нового шаблона ответа
@@ -7617,7 +7647,7 @@
         this.renderTemplates();
 
         // Иконки
-        if (window.lucide) lucide.createIcons();
+        _debouncedCreateIcons();
       },
 
       setupSwipeGestures() {
@@ -7762,7 +7792,7 @@
           container.appendChild(card);
         });
 
-        if (window.lucide) lucide.createIcons();
+        _debouncedCreateIcons();
       },
 
       async editTemplate(id) {
@@ -8063,7 +8093,7 @@
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        if (window.lucide) lucide.createIcons();
+        _debouncedCreateIcons();
 
         // Закрытие
         const closeForm = () => {
@@ -8212,7 +8242,7 @@
           container.appendChild(card);
         });
 
-        if (window.lucide) lucide.createIcons();
+        _debouncedCreateIcons();
       }
 
       // КНОПКА СОЗДАНИЯ ШАБЛОНА
@@ -8449,7 +8479,7 @@
           i.style.height = '22px';
           span.appendChild(i);
           iconWrap.appendChild(span);
-          try { window.lucide.createIcons(); } catch (e) { }
+          _debouncedCreateIcons();
         } else {
           span.textContent = danger ? '!' : '✦';
           iconWrap.appendChild(span);
@@ -9006,7 +9036,7 @@
           direction = 'down';
           icon.innerHTML = arrowDownPath;
           toggleBtn.style.display = 'flex';
-          if (window.lucide) lucide.createIcons();
+          _debouncedCreateIcons();
         } else {
           toggleBtn.style.display = 'none';
         }

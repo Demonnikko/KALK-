@@ -1,6 +1,6 @@
 // Service Worker для Illusionist Calculator
 // Версия: 11.0 (FULL OFFLINE WITH LOCAL DEPENDENCIES)
-const CACHE_NAME = 'illusionist-calc-v11-offline';
+const CACHE_NAME = 'illusionist-calc-v12-offline';
 
 // Критические ресурсы
 const CORE_ASSETS = [
@@ -39,11 +39,15 @@ self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return Promise.allSettled(
-        ALL_ASSETS.map(url =>
-          cache.add(url).catch(err => console.warn('[SW] Не удалось кэшировать:', url))
-        )
-      );
+      // Критические ресурсы — без них офлайн не работает, обязательно кэшируем
+      return cache.addAll(CORE_ASSETS).then(() => {
+        // Опциональные ресурсы — иконки и Firebase SDK, могут не загрузиться
+        return Promise.allSettled(
+          [...ICON_ASSETS, ...FIREBASE_SDK].map(url =>
+            cache.add(url).catch(err => console.warn('[SW] Не удалось кэшировать:', url))
+          )
+        );
+      });
     })
   );
 });

@@ -587,14 +587,12 @@
     }
 
     .admin-content {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height .35s ease;
+      display: none;
       padding-top: 0;
     }
 
     .admin-content.open {
-      max-height: 1800px;
+      display: block;
       padding-top: 12px;
     }
 
@@ -2047,7 +2045,7 @@
                 <span class="text-xs text-slate-300 font-semibold">Бонусы в КП</span>
               </div>
               <div class="toggle-switch">
-                <input type="checkbox" id="inp-show-bonuses" checked />
+                <input type="checkbox" id="inp-show-bonuses" />
                 <div class="toggle-track"></div>
                 <div class="toggle-knob"></div>
               </div>
@@ -2071,7 +2069,7 @@
                 <span class="text-xs text-slate-300 font-semibold">Ссылки в КП</span>
               </div>
               <div class="toggle-switch">
-                <input type="checkbox" id="inp-show-links" checked />
+                <input type="checkbox" id="inp-show-links" />
                 <div class="toggle-track"></div>
                 <div class="toggle-knob"></div>
               </div>
@@ -2606,16 +2604,23 @@
           { el: '#inp-svc',           title: 'Услуга',             text: 'Выберите конкретную услугу из списка. Её цена подставится автоматически.' },
           { el: '#btn-add-service',   title: 'Добавить в корзину', text: 'Нажмите, чтобы добавить выбранную услугу в корзину. Можно добавить несколько услуг.' },
           { el: '#btn-copy-quote',    title: 'Скопировать КП',     text: 'Формирует готовое коммерческое предложение и копирует в буфер обмена. Отправляйте клиенту!' },
-          { el: '#btn-settings',      title: 'Настройки',          text: 'Здесь добавляются регионы, услуги, цены, бонусы, способы оплаты и всё остальное.' }
+          { el: '#btn-settings',      title: 'Настройки',          text: 'Здесь добавляются регионы, услуги, цены, бонусы, способы оплаты и всё остальное.', liftParent: 'header' },
+          { el: null,                  title: 'Быстрые ответы',     text: 'Свайпните от правого края экрана влево, чтобы открыть панель быстрых ответов. Там можно создать и отправить шаблонные сообщения.', noTarget: true }
         ];
 
         var currentStep = 0;
         var overlay = null;
         var tooltip = null;
         var prevHighlight = null;
+        var prevParentZ = null;
 
         function cleanup() {
           if (prevHighlight) prevHighlight.classList.remove('onboarding-highlight');
+          // Восстанавливаем z-index родителя, если меняли
+          if (prevParentZ) {
+            prevParentZ.el.style.zIndex = prevParentZ.old;
+            prevParentZ = null;
+          }
           if (overlay) overlay.remove();
           if (tooltip) tooltip.remove();
           overlay = null;
@@ -2633,6 +2638,35 @@
           if (i >= steps.length) { finish(); return; }
 
           var step = steps[i];
+
+          // Шаг без привязки к элементу (например, подсказка про свайп)
+          if (step.noTarget) {
+            currentStep = i;
+
+            overlay = document.createElement('div');
+            overlay.className = 'onboarding-overlay';
+            document.body.appendChild(overlay);
+
+            tooltip = document.createElement('div');
+            tooltip.className = 'onboarding-tooltip';
+            tooltip.style.top = '50%';
+            tooltip.style.transform = 'translate(-50%, -50%)';
+
+            tooltip.innerHTML =
+              '<div class="ob-title">' + step.title + '</div>' +
+              '<div class="ob-text">' + step.text + '</div>' +
+              '<div style="text-align:center;margin:12px 0;font-size:32px;">👉</div>' +
+              '<div class="ob-step">Шаг ' + (i + 1) + ' из ' + steps.length + '</div>' +
+              '<button class="ob-btn" id="ob-next">' + (i === steps.length - 1 ? 'Готово' : 'Далее') + '</button>' +
+              '<button class="ob-skip" id="ob-skip">Пропустить</button>';
+
+            document.body.appendChild(tooltip);
+            document.getElementById('ob-next').onclick = function() { showStep(i + 1); };
+            document.getElementById('ob-skip').onclick = finish;
+            overlay.onclick = function() { showStep(i + 1); };
+            return;
+          }
+
           var target = document.querySelector(step.el);
           if (!target) { showStep(i + 1); return; }
 
@@ -2642,6 +2676,15 @@
           overlay = document.createElement('div');
           overlay.className = 'onboarding-overlay';
           document.body.appendChild(overlay);
+
+          // Если элемент внутри stacking context (header и пр.) — поднимаем z-index родителя
+          if (step.liftParent) {
+            var parent = target.closest(step.liftParent);
+            if (parent) {
+              prevParentZ = { el: parent, old: parent.style.zIndex };
+              parent.style.zIndex = '99991';
+            }
+          }
 
           // Highlight target
           target.classList.add('onboarding-highlight');
@@ -6424,8 +6467,35 @@
     // ADMIN
     // ============================================
     const Admin = {
+      // Сохраняем какие секции открыты (по тексту заголовка)
+      _saveOpenSections: () => {
+        const open = new Set();
+        document.querySelectorAll('.admin-header').forEach(h => {
+          const content = h.nextElementSibling;
+          if (content && content.classList.contains('open')) {
+            const title = h.querySelector('span')?.textContent?.trim();
+            if (title) open.add(title);
+          }
+        });
+        return open;
+      },
+
+      _restoreOpenSections: (openSet) => {
+        if (!openSet || !openSet.size) return;
+        document.querySelectorAll('.admin-header').forEach(h => {
+          const title = h.querySelector('span')?.textContent?.trim();
+          if (title && openSet.has(title)) {
+            const content = h.nextElementSibling;
+            if (content) content.classList.add('open');
+            const icon = h.querySelector('i');
+            if (icon) icon.style.transform = 'rotate(180deg)';
+          }
+        });
+      },
+
       render: () => {
         try {
+          var openSections = Admin._saveOpenSections();
           Admin.renderPersonalInfo();
           Admin.renderTravel();
           Admin.renderServices();
@@ -6434,6 +6504,7 @@
           Admin.renderBonuses();
           Admin.renderPayments();
           Admin.renderLinks();
+          Admin._restoreOpenSections(openSections);
           _debouncedCreateIcons();
           DataManager.updateStats();
         } catch (err) {

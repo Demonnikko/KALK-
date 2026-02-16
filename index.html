@@ -1424,6 +1424,74 @@
       opacity: 1;
     }
 
+    /* Onboarding overlay */
+    .onboarding-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 99990;
+      transition: opacity 0.3s ease;
+    }
+    .onboarding-highlight {
+      position: relative;
+      z-index: 99991;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.6), 0 0 20px rgba(245, 158, 11, 0.3);
+      border-radius: 14px;
+    }
+    .onboarding-tooltip {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99992;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1.5px solid rgba(245, 158, 11, 0.4);
+      border-radius: 18px;
+      padding: 16px 20px;
+      max-width: 320px;
+      width: calc(100% - 32px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+    .onboarding-tooltip .ob-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #f59e0b;
+      margin-bottom: 6px;
+    }
+    .onboarding-tooltip .ob-text {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .onboarding-tooltip .ob-step {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 10px;
+    }
+    .onboarding-tooltip .ob-btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 20px;
+      background: #f59e0b;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+    }
+    .onboarding-tooltip .ob-skip {
+      display: inline-block;
+      margin-top: 12px;
+      margin-left: 10px;
+      padding: 8px 14px;
+      background: transparent;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
     /* iOS-style toggle switch */
     .toggle-switch {
       position: relative;
@@ -1675,8 +1743,8 @@
         if (_lucideTimer) return;
         _lucideTimer = requestAnimationFrame(function() {
           _lucideTimer = null;
-          if (window.lucide && typeof lucide.createIcons === 'function') {
-            _debouncedCreateIcons();
+          if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
           }
         });
       };
@@ -1937,7 +2005,7 @@
             <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="credit-card" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
-                <span id="lbl-cashless" class="text-xs text-slate-300 font-semibold truncate">Безнал</span>
+                <span id="lbl-cashless" class="text-xs text-slate-300 font-semibold">Безнал</span>
               </div>
               <div class="toggle-switch">
                 <input type="checkbox" id="inp-tax" />
@@ -1949,7 +2017,7 @@
             <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="building-2" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
-                <span id="lbl-agency" class="text-xs text-slate-300 font-semibold truncate">Агентство</span>
+                <span id="lbl-agency" class="text-xs text-slate-300 font-semibold">Агентство</span>
               </div>
               <div class="toggle-switch">
                 <input type="checkbox" id="inp-agency" />
@@ -1961,7 +2029,7 @@
             <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="gift" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
-                <span class="text-xs text-slate-300 font-semibold truncate">Бонусы в КП</span>
+                <span class="text-xs text-slate-300 font-semibold">Бонусы в КП</span>
               </div>
               <div class="toggle-switch">
                 <input type="checkbox" id="inp-show-bonuses" checked />
@@ -1973,7 +2041,7 @@
             <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="flame" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
-                <span id="lbl-burn" class="text-xs text-slate-300 font-semibold truncate">48 часов</span>
+                <span id="lbl-burn" class="text-xs text-slate-300 font-semibold">48 часов</span>
               </div>
               <div class="toggle-switch">
                 <input type="checkbox" id="inp-burn" />
@@ -1985,7 +2053,7 @@
             <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition col-span-2">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="link" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
-                <span class="text-xs text-slate-300 font-semibold truncate">Ссылки в КП</span>
+                <span class="text-xs text-slate-300 font-semibold">Ссылки в КП</span>
               </div>
               <div class="toggle-switch">
                 <input type="checkbox" id="inp-show-links" checked />
@@ -2507,8 +2575,101 @@
         var main = document.getElementById('app-main');
         if (header) header.style.display = '';
         if (main) main.style.display = '';
+
+        // Запускаем обучение при первом запуске
+        setTimeout(function() {
+          if (!localStorage.getItem('illusionist_onboarding_done')) {
+            window._startOnboarding && window._startOnboarding();
+          }
+        }, 600);
       }
       window.showApp = showApp;
+
+      // ============================================
+      // ОБУЧЕНИЕ ПРИ ПЕРВОМ ЗАПУСКЕ
+      // ============================================
+      (function() {
+        var steps = [
+          { el: '#inp-date',          title: 'Дата мероприятия',   text: 'Выберите дату проведения. Если дата попадает на праздник — цена автоматически увеличится.' },
+          { el: '#inp-time',          title: 'Время',              text: 'Укажите время начала или выберите «Без времени», если оно ещё не определено.' },
+          { el: '#inp-region',        title: 'Регион',             text: 'Выберите регион. Регионы и города добавляются в Настройках (шестерёнка сверху).' },
+          { el: '#inp-city',          title: 'Город',              text: 'Выберите город. От города зависит стоимость логистики.' },
+          { el: '#inp-cat',           title: 'Категория',          text: 'Выберите категорию услуг. Категории и цены настраиваются в Настройках.' },
+          { el: '#inp-svc',           title: 'Услуга',             text: 'Выберите конкретную услугу из списка. Её цена подставится автоматически.' },
+          { el: '#btn-add-service',   title: 'Добавить в корзину', text: 'Нажмите, чтобы добавить выбранную услугу в корзину. Можно добавить несколько услуг.' },
+          { el: '#btn-copy-quote',    title: 'Скопировать КП',     text: 'Формирует готовое коммерческое предложение и копирует в буфер обмена. Отправляйте клиенту!' },
+          { el: '#btn-settings',      title: 'Настройки',          text: 'Здесь добавляются регионы, услуги, цены, бонусы, способы оплаты и всё остальное.' }
+        ];
+
+        var currentStep = 0;
+        var overlay = null;
+        var tooltip = null;
+        var prevHighlight = null;
+
+        function cleanup() {
+          if (prevHighlight) prevHighlight.classList.remove('onboarding-highlight');
+          if (overlay) overlay.remove();
+          if (tooltip) tooltip.remove();
+          overlay = null;
+          tooltip = null;
+          prevHighlight = null;
+        }
+
+        function finish() {
+          cleanup();
+          localStorage.setItem('illusionist_onboarding_done', '1');
+        }
+
+        function showStep(i) {
+          cleanup();
+          if (i >= steps.length) { finish(); return; }
+
+          var step = steps[i];
+          var target = document.querySelector(step.el);
+          if (!target) { showStep(i + 1); return; }
+
+          currentStep = i;
+
+          // Overlay
+          overlay = document.createElement('div');
+          overlay.className = 'onboarding-overlay';
+          document.body.appendChild(overlay);
+
+          // Highlight target
+          target.classList.add('onboarding-highlight');
+          prevHighlight = target;
+
+          // Scroll target into view
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          // Tooltip
+          tooltip = document.createElement('div');
+          tooltip.className = 'onboarding-tooltip';
+
+          var rect = target.getBoundingClientRect();
+          var spaceBelow = window.innerHeight - rect.bottom;
+          if (spaceBelow > 200) {
+            tooltip.style.top = (rect.bottom + 12) + 'px';
+          } else {
+            tooltip.style.bottom = (window.innerHeight - rect.top + 12) + 'px';
+          }
+
+          tooltip.innerHTML =
+            '<div class="ob-title">' + step.title + '</div>' +
+            '<div class="ob-text">' + step.text + '</div>' +
+            '<div class="ob-step">Шаг ' + (i + 1) + ' из ' + steps.length + '</div>' +
+            '<button class="ob-btn" id="ob-next">' + (i === steps.length - 1 ? 'Готово' : 'Далее') + '</button>' +
+            '<button class="ob-skip" id="ob-skip">Пропустить</button>';
+
+          document.body.appendChild(tooltip);
+
+          document.getElementById('ob-next').onclick = function() { showStep(i + 1); };
+          document.getElementById('ob-skip').onclick = finish;
+          overlay.onclick = function() { showStep(i + 1); };
+        }
+
+        window._startOnboarding = function() { showStep(0); };
+      })();
 
       window.addEventListener('load', async function () {
         // ПЕРВЫМ ДЕЛОМ проверяем устройство
@@ -4009,10 +4170,10 @@
           const agencyPct = Utils.sanitizeNumber(DB.config?.agencyPercent ?? 15, 0, 99, 15);
 
           const cashlessLbl = document.getElementById('lbl-cashless');
-          if (cashlessLbl) cashlessLbl.textContent = `Оплата по безналу`;
+          if (cashlessLbl) cashlessLbl.textContent = `Безнал ${cashlessPct}%`;
 
           const agencyLbl = document.getElementById('lbl-agency');
-          if (agencyLbl) agencyLbl.textContent = `Комиссия агентства`;
+          if (agencyLbl) agencyLbl.textContent = `Агентство ${agencyPct}%`;
         } catch (e) {
           // silent
         }
@@ -4022,7 +4183,7 @@
         try {
           const hours = Utils.sanitizeNumber(DB.config?.burnHours ?? 48, 1, 240, 48);
           const lbl = document.getElementById('lbl-burn');
-          if (lbl) lbl.textContent = `Предложение действует ${hours} часов`;
+          if (lbl) lbl.textContent = `Акция ${hours}ч`;
         } catch (e) { }
       },
       migrateServicesNames: () => {

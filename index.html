@@ -2770,30 +2770,34 @@
           // Scroll target into view
           target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-          // Tooltip
-          tooltip = document.createElement('div');
-          tooltip.className = 'onboarding-tooltip';
+          // Tooltip — позиционируем после завершения скролла
+          function positionTooltip() {
+            tooltip = document.createElement('div');
+            tooltip.className = 'onboarding-tooltip';
 
-          var rect = target.getBoundingClientRect();
-          var spaceBelow = window.innerHeight - rect.bottom;
-          if (spaceBelow > 200) {
-            tooltip.style.top = (rect.bottom + 12) + 'px';
-          } else {
-            tooltip.style.bottom = (window.innerHeight - rect.top + 12) + 'px';
+            var rect = target.getBoundingClientRect();
+            var spaceBelow = window.innerHeight - rect.bottom;
+            if (spaceBelow > 200) {
+              tooltip.style.top = (rect.bottom + 12) + 'px';
+            } else {
+              tooltip.style.bottom = (window.innerHeight - rect.top + 12) + 'px';
+            }
+
+            tooltip.innerHTML =
+              '<div class="ob-title">' + step.title + '</div>' +
+              '<div class="ob-text">' + step.text + '</div>' +
+              '<div class="ob-step">Шаг ' + (i + 1) + ' из ' + steps.length + '</div>' +
+              '<button class="ob-btn" id="ob-next">' + (i === steps.length - 1 ? 'Готово' : 'Далее') + '</button>' +
+              '<button class="ob-skip" id="ob-skip">Пропустить</button>';
+
+            document.body.appendChild(tooltip);
+
+            document.getElementById('ob-next').onclick = function() { showStep(i + 1); };
+            document.getElementById('ob-skip').onclick = finish;
+            overlay.onclick = function() { showStep(i + 1); };
           }
 
-          tooltip.innerHTML =
-            '<div class="ob-title">' + step.title + '</div>' +
-            '<div class="ob-text">' + step.text + '</div>' +
-            '<div class="ob-step">Шаг ' + (i + 1) + ' из ' + steps.length + '</div>' +
-            '<button class="ob-btn" id="ob-next">' + (i === steps.length - 1 ? 'Готово' : 'Далее') + '</button>' +
-            '<button class="ob-skip" id="ob-skip">Пропустить</button>';
-
-          document.body.appendChild(tooltip);
-
-          document.getElementById('ob-next').onclick = function() { showStep(i + 1); };
-          document.getElementById('ob-skip').onclick = finish;
-          overlay.onclick = function() { showStep(i + 1); };
+          setTimeout(positionTooltip, 450);
         }
 
         window._startOnboarding = function() { showStep(0); };

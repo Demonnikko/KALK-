@@ -39,15 +39,11 @@ self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      // Критические ресурсы — без них офлайн не работает, обязательно кэшируем
-      return cache.addAll(CORE_ASSETS).then(() => {
-        // Опциональные ресурсы — иконки и Firebase SDK, могут не загрузиться
-        return Promise.allSettled(
-          [...ICON_ASSETS, ...FIREBASE_SDK].map(url =>
-            cache.add(url).catch(err => console.warn('[SW] Не удалось кэшировать:', url))
-          )
-        );
-      });
+      return Promise.allSettled(
+        ALL_ASSETS.map(url =>
+          cache.add(url).catch(err => console.warn('[SW] Не удалось кэшировать:', url))
+        )
+      );
     })
   );
 });

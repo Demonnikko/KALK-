@@ -79,11 +79,11 @@
 
   <!-- Tailwind (локальный файл для офлайн работы) -->
   <link rel="preload" href="tailwind.min.js" as="script">
-  <script defer src="tailwind.min.js"></script>
+  <script src="tailwind.min.js"></script>
 
   <!-- Lucide (локальный файл для офлайн работы) -->
   <link rel="preload" href="lucide.min.js" as="script">
-  <script defer src="lucide.min.js"></script>
+  <script src="lucide.min.js"></script>
 
   <!-- Critical CSS для мгновенного рендера -->
   <style>
@@ -2799,7 +2799,7 @@
         window._startOnboarding = function() { showStep(0); };
       })();
 
-      window.addEventListener('load', async function () {
+      window.addEventListener('DOMContentLoaded', async function () {
         // Автовыделение текста в числовых полях при фокусе — удобно заменить значение
         document.addEventListener('focus', function (e) {
           if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'number') {

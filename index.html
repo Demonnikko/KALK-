@@ -3849,6 +3849,18 @@
           const safeText = String(text || '');
           if (!safeText.trim()) return;
 
+          // Snapshot корзины и формы для восстановления
+          const cartSnapshot = (State?.cart || []).map(it => ({ ...it }));
+          const formSnapshot = {
+            date: State?.date || '',
+            timeMode: document.getElementById('inp-time-mode')?.value || 'time',
+            time: document.getElementById('inp-time')?.value || '',
+            region: document.getElementById('inp-region')?.value || '',
+            city: document.getElementById('inp-city')?.value || '',
+            agency: !!document.getElementById('inp-agency')?.checked,
+            burn: !!document.getElementById('inp-burn')?.checked
+          };
+
           const entry = {
             id: String(Date.now()) + '_' + Math.random().toString(16).slice(2),
             createdAt: nowIso,
@@ -3856,7 +3868,9 @@
             title: Utils.sanitizeText(meta.title || KPBuffer._buildTitleFromState(), 120),
             total: Utils.sanitizeNumber(meta.total ?? State?.finalTotal ?? 0, 0, 999999999, 0),
             itemsCount: Utils.sanitizeNumber(meta.itemsCount ?? (State?.cart || []).filter(it => it && it.name && !String(it.name).startsWith('ПАКЕТ:')).length, 0, 99, 0),
-            text: safeText
+            text: safeText,
+            cartSnapshot: cartSnapshot,
+            formSnapshot: formSnapshot
           };
 
           // Удаляем дубликаты (по тексту) чтобы буфер не засорялся
@@ -3934,6 +3948,78 @@
         App.showToast('Сохранено');
       },
 
+      restoreToCart: async (id) => {
+        KPBuffer.ensure();
+        const entry = (DB.kpBuffer || []).find(e => e && e.id === id);
+        if (!entry || !entry.cartSnapshot || !entry.cartSnapshot.length) {
+          App.showToast('Нет данных корзины в этом КП');
+          return;
+        }
+
+        const ok = await PremiumDialog.confirm({
+          message: 'Загрузить корзину из этого КП? Текущая корзина будет заменена.',
+          okText: 'Загрузить',
+          cancelText: 'Отмена',
+          icon: 'shopping-cart'
+        });
+
+        if (!ok) return;
+
+        // Восстанавливаем корзину
+        State.cart = entry.cartSnapshot.map(it => ({ ...it }));
+
+        // Восстанавливаем форму
+        const form = entry.formSnapshot || {};
+
+        if (form.date) {
+          const dateInput = document.getElementById('inp-date');
+          if (dateInput) { dateInput.value = form.date; State.date = form.date; }
+        }
+
+        const timeModeSelect = document.getElementById('inp-time-mode');
+        const timeInput = document.getElementById('inp-time');
+        if (timeModeSelect && form.timeMode) {
+          timeModeSelect.value = form.timeMode;
+          timeModeSelect.dispatchEvent(new Event('change'));
+        }
+        if (timeInput && form.time && form.timeMode !== 'none') {
+          timeInput.value = form.time;
+        }
+
+        const regionSelect = document.getElementById('inp-region');
+        if (regionSelect && form.region) {
+          regionSelect.value = form.region;
+          App.updateRegion();
+          // Город ставим после обновления списка городов
+          setTimeout(() => {
+            const citySelect = document.getElementById('inp-city');
+            if (citySelect && form.city) {
+              citySelect.value = form.city;
+            }
+            App.calc();
+          }, 50);
+        }
+
+        const agencyCheckbox = document.getElementById('inp-agency');
+        if (agencyCheckbox) agencyCheckbox.checked = !!form.agency;
+
+        const burnCheckbox = document.getElementById('inp-burn');
+        if (burnCheckbox) {
+          burnCheckbox.checked = !!form.burn;
+          burnCheckbox.dispatchEvent(new Event('change'));
+        }
+
+        // Закрываем настройки и рендерим
+        const settingsView = document.getElementById('view-settings');
+        if (settingsView?.classList.contains('active')) {
+          settingsView.classList.remove('active');
+        }
+
+        App.renderCart();
+        App.calc();
+        App.showToast('Корзина загружена из КП');
+      },
+
       clearAll: async () => {
         KPBuffer.ensure();
         if (!(DB.kpBuffer || []).length) {
@@ -3991,6 +4077,9 @@
             <div class="text-xs text-slate-400 mt-1 truncate">${Utils.escapeHtml(ts)}${meta ? ' • ' + Utils.escapeHtml(meta) : ''}</div>
           </div>
           <div class="flex gap-1 shrink-0">
+            <button class="btn-icon" data-kp-restore="${Utils.escapeHtml(entry.id)}" title="В корзину">
+              <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+            </button>
             <button class="btn-icon" data-kp-copy="${Utils.escapeHtml(entry.id)}" title="Копировать">
               <i data-lucide="copy" class="w-4 h-4"></i>
             </button>
@@ -4004,10 +4093,12 @@
         </div>
       `;
 
+          const restoreBtn = card.querySelector('[data-kp-restore]');
           const copyBtn = card.querySelector('[data-kp-copy]');
           const editBtn = card.querySelector('[data-kp-edit]');
           const delBtn = card.querySelector('[data-kp-del]');
 
+          if (restoreBtn) restoreBtn.addEventListener('click', () => KPBuffer.restoreToCart(entry.id));
           if (copyBtn) copyBtn.addEventListener('click', () => KPBuffer.copy(entry.id));
           if (editBtn) editBtn.addEventListener('click', () => KPBuffer.edit(entry.id));
           if (delBtn) delBtn.addEventListener('click', () => KPBuffer.remove(entry.id));

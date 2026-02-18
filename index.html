@@ -271,6 +271,7 @@
 
     /* На сенсорных экранах отключаем hover-трансформации — иначе при скролле элементы «прыгают» */
     @media (hover: none) {
+
       .mini-chip:hover,
       .btn-gold:hover,
       .btn-secondary:hover,
@@ -600,13 +601,14 @@
     .settings-tab-bar {
       display: flex;
       gap: 4px;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 14px;
       padding: 4px;
       margin-bottom: 20px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
+
     .settings-tab {
       flex: 1;
       min-width: 0;
@@ -622,13 +624,20 @@
       border: none;
       background: none;
     }
+
     .settings-tab.active {
-      background: rgba(245,158,11,0.15);
+      background: rgba(245, 158, 11, 0.15);
       color: #f59e0b;
-      box-shadow: 0 2px 8px rgba(245,158,11,0.1);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
     }
-    .settings-tab-content { display: none; }
-    .settings-tab-content.active { display: block; }
+
+    .settings-tab-content {
+      display: none;
+    }
+
+    .settings-tab-content.active {
+      display: block;
+    }
 
     .edit-row {
       display: flex;
@@ -1394,6 +1403,7 @@
       transition: all 0.2s;
       font-family: inherit;
     }
+
     .drawer-add-btn:active {
       background: rgba(245, 158, 11, 0.1);
       border-color: rgba(245, 158, 11, 0.6);
@@ -1483,12 +1493,14 @@
       z-index: 99990;
       transition: opacity 0.3s ease;
     }
+
     .onboarding-highlight {
       position: relative;
       z-index: 99991;
       box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.6), 0 0 20px rgba(245, 158, 11, 0.3);
       border-radius: 14px;
     }
+
     .onboarding-tooltip {
       position: fixed;
       left: 50%;
@@ -1502,22 +1514,26 @@
       width: calc(100% - 32px);
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
     }
+
     .onboarding-tooltip .ob-title {
       font-size: 14px;
       font-weight: 800;
       color: #f59e0b;
       margin-bottom: 6px;
     }
+
     .onboarding-tooltip .ob-text {
       font-size: 13px;
       color: #cbd5e1;
       line-height: 1.5;
     }
+
     .onboarding-tooltip .ob-step {
       font-size: 11px;
       color: #64748b;
       margin-top: 10px;
     }
+
     .onboarding-tooltip .ob-btn {
       display: inline-block;
       margin-top: 12px;
@@ -1530,6 +1546,7 @@
       border: none;
       cursor: pointer;
     }
+
     .onboarding-tooltip .ob-skip {
       display: inline-block;
       margin-top: 12px;
@@ -1550,12 +1567,14 @@
       height: 26px;
       flex-shrink: 0;
     }
+
     .toggle-switch input {
       opacity: 0;
       width: 0;
       height: 0;
       position: absolute;
     }
+
     .toggle-switch .toggle-track {
       position: absolute;
       inset: 0;
@@ -1563,9 +1582,11 @@
       border-radius: 999px;
       transition: background 0.25s ease;
     }
-    .toggle-switch input:checked + .toggle-track {
+
+    .toggle-switch input:checked+.toggle-track {
       background: #f59e0b;
     }
+
     .toggle-switch .toggle-knob {
       position: absolute;
       top: 3px;
@@ -1577,7 +1598,8 @@
       transition: transform 0.25s ease;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
-    .toggle-switch input:checked ~ .toggle-knob {
+
+    .toggle-switch input:checked~.toggle-knob {
       transform: translateX(18px);
     }
   </style>
@@ -1730,18 +1752,18 @@
 
     // Загружаем Firebase SDK динамически - если нет сети, приложение работает без него
     function loadFirebaseSDK() {
-      return new Promise(function(resolve) {
-        var timeout = setTimeout(function() { resolve(false); }, 5000);
+      return new Promise(function (resolve) {
+        var timeout = setTimeout(function () { resolve(false); }, 5000);
         var s1 = document.createElement('script');
         s1.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js';
-        s1.onload = function() {
+        s1.onload = function () {
           var s2 = document.createElement('script');
           s2.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js';
-          s2.onload = function() { clearTimeout(timeout); resolve(true); };
-          s2.onerror = function() { clearTimeout(timeout); resolve(false); };
+          s2.onload = function () { clearTimeout(timeout); resolve(true); };
+          s2.onerror = function () { clearTimeout(timeout); resolve(false); };
           document.head.appendChild(s2);
         };
-        s1.onerror = function() { clearTimeout(timeout); resolve(false); };
+        s1.onerror = function () { clearTimeout(timeout); resolve(false); };
         document.head.appendChild(s1);
       });
     }
@@ -1766,7 +1788,7 @@
     }
 
     // Запускаем загрузку SDK, затем инициализируем
-    loadFirebaseSDK().then(function(loaded) {
+    loadFirebaseSDK().then(function (loaded) {
       initFirebase();
     });
 
@@ -1788,11 +1810,11 @@
 
   <!-- Оптимизация: дебаунс lucide.createIcons() -->
   <script>
-    (function() {
+    (function () {
       var _lucideTimer = null;
-      window._debouncedCreateIcons = function() {
+      window._debouncedCreateIcons = function () {
         if (_lucideTimer) return;
-        _lucideTimer = requestAnimationFrame(function() {
+        _lucideTimer = requestAnimationFrame(function () {
           _lucideTimer = null;
           if (window.lucide && typeof window.lucide.createIcons === 'function') {
             window.lucide.createIcons();
@@ -1928,7 +1950,8 @@
 
   <!-- ========== TOAST ========== -->
   <div id="toast">
-    <div style="background: #1e1e24; border: 1.5px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 14px 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
+    <div
+      style="background: #1e1e24; border: 1.5px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 14px 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
       <div class="flex items-center gap-3">
         <i data-lucide="bell" class="w-5 h-5 text-amber-400"></i>
         <div id="toast-msg" class="text-base text-slate-200 font-semibold"></div>
@@ -1940,8 +1963,7 @@
   <header id="app-header" class="relative z-10" style="display:none;">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center"
-          >
+        <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center">
           <i data-lucide="calculator" class="w-6 h-6 text-amber-400"></i>
         </div>
         <div>
@@ -2054,7 +2076,8 @@
           </div>
 
           <div class="grid grid-cols-2 gap-2.5">
-            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
+            <label
+              class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="credit-card" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
                 <span id="lbl-cashless" class="text-xs text-slate-300 font-semibold">Безнал</span>
@@ -2066,7 +2089,8 @@
               </div>
             </label>
 
-            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
+            <label
+              class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="building-2" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
                 <span id="lbl-agency" class="text-xs text-slate-300 font-semibold">Агентство</span>
@@ -2078,7 +2102,8 @@
               </div>
             </label>
 
-            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
+            <label
+              class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="gift" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
                 <span class="text-xs text-slate-300 font-semibold">Бонусы в КП</span>
@@ -2090,7 +2115,8 @@
               </div>
             </label>
 
-            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
+            <label
+              class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="flame" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
                 <span id="lbl-burn" class="text-xs text-slate-300 font-semibold">48 часов</span>
@@ -2102,7 +2128,8 @@
               </div>
             </label>
 
-            <label class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition col-span-2">
+            <label
+              class="flex items-center justify-between gap-2 bg-white/5 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/10 transition col-span-2">
               <div class="flex items-center gap-2 min-w-0">
                 <i data-lucide="link" class="w-4 h-4 text-amber-400/70 flex-shrink-0"></i>
                 <span class="text-xs text-slate-300 font-semibold">Ссылки в КП</span>
@@ -2116,19 +2143,23 @@
           </div>
 
           <!-- Inline burn bonus popup -->
-          <div id="burn-inline-popup" style="display:none;" class="mt-3 bg-white/5 rounded-2xl p-4 border border-amber-500/20">
+          <div id="burn-inline-popup" style="display:none;"
+            class="mt-3 bg-white/5 rounded-2xl p-4 border border-amber-500/20">
             <div class="text-xs font-bold text-amber-400 mb-3">Настройка сгорающего бонуса</div>
             <div class="grid grid-cols-2 gap-2">
               <div class="col-span-2">
-                <input id="burn-inline-title" type="text" class="form-input" placeholder="Название бонуса" maxlength="120" style="min-height:38px;padding:8px 12px;font-size:13px;" />
+                <input id="burn-inline-title" type="text" class="form-input" placeholder="Название бонуса"
+                  maxlength="120" style="min-height:38px;padding:8px 12px;font-size:13px;" />
               </div>
               <div>
                 <label class="text-xs text-slate-500 mb-1 block">Старая цена</label>
-                <input id="burn-inline-price" type="number" class="form-input text-right mono" placeholder="15000" style="min-height:38px;padding:8px 12px;font-size:13px;" />
+                <input id="burn-inline-price" type="number" class="form-input text-right mono" placeholder="15000"
+                  style="min-height:38px;padding:8px 12px;font-size:13px;" />
               </div>
               <div>
                 <label class="text-xs text-slate-500 mb-1 block">Новая цена</label>
-                <input id="burn-inline-discount" type="number" class="form-input text-right mono" placeholder="0" style="min-height:38px;padding:8px 12px;font-size:13px;" />
+                <input id="burn-inline-discount" type="number" class="form-input text-right mono" placeholder="0"
+                  style="min-height:38px;padding:8px 12px;font-size:13px;" />
               </div>
             </div>
           </div>
@@ -2257,184 +2288,187 @@
       <!-- TAB: PROFILE -->
       <div class="settings-tab-content active" data-tab-content="profile">
 
-      <!-- PERSONAL INFO -->
-      <div class="glass rounded-2xl p-5 mb-6 border-2 border-amber-500/20">
-        <div class="flex items-center gap-3 mb-4">
-          <i data-lucide="user" class="w-6 h-6 text-amber-400"></i>
-          <span class="text-lg font-extrabold text-white">Персональные данные</span>
-        </div>
-
-        <div class="space-y-3">
-          <div>
-            <label class="block text-sm font-semibold text-slate-300 mb-2">
-              Ваше имя / Псевдоним
-            </label>
-            <input type="text" id="personal-name" class="form-input" placeholder="Например: Александр Великий 🎩"
-              maxlength="100" />
-            <div class="text-xs text-slate-500 mt-1">
-              Будет отображаться в подписи КП
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- DATA MANAGEMENT -->
-      <div class="glass rounded-2xl p-5 mb-6 border-2 border-emerald-500/20">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-3">
-            <i data-lucide="database" class="w-6 h-6 text-emerald-400"></i>
-            <span class="text-lg font-extrabold text-white">Управление данными</span>
-          </div>
-          <div class="text-xs text-slate-500 mono" id="db-version-display">v2.0</div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 mb-5">
-          <button id="btn-export-data" class="btn-data btn-export">
-            <i data-lucide="download" class="w-5 h-5"></i>
-            <span>Экспорт</span>
-          </button>
-          <button id="btn-import-data" class="btn-data btn-import">
-            <i data-lucide="upload" class="w-5 h-5"></i>
-            <span>Импорт</span>
-          </button>
-        </div>
-
-        <div class="bg-white/5 rounded-xl p-4">
-          <div class="flex items-center justify-between text-sm mb-3">
-            <div class="flex items-center gap-2">
-              <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
-              <span class="text-slate-300 font-semibold">Целостность данных</span>
-            </div>
-            <span class="text-emerald-400 font-bold" id="data-integrity-status">OK</span>
-          </div>
-          <div class="grid grid-cols-3 gap-3 text-xs text-slate-500">
-            <div>Услуг: <span class="text-slate-300 font-bold" id="stats-services">0</span></div>
-            <div>Регионов: <span class="text-slate-300 font-bold" id="stats-regions">0</span></div>
-            <div>Бонусов: <span class="text-slate-300 font-bold" id="stats-bonuses">0</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Profile -->
-      <div class="glass rounded-2xl p-5 mb-6">
-        <div class="text-lg font-extrabold text-white mb-4">Профиль</div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-sm text-slate-400 font-bold mb-2 block">Бронь (%)</label>
-            <input id="cfg-deposit" type="number" class="form-input text-right mono" placeholder="30" />
+        <!-- PERSONAL INFO -->
+        <div class="glass rounded-2xl p-5 mb-6 border-2 border-amber-500/20">
+          <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="user" class="w-6 h-6 text-amber-400"></i>
+            <span class="text-lg font-extrabold text-white">Персональные данные</span>
           </div>
 
-          <div>
-            <label class="text-sm text-slate-400 font-bold mb-2 block">Оплата по безналу (%)</label>
-            <input id="cfg-cashless-percent" type="number" class="form-input text-right mono" placeholder="6" />
-            <div class="text-xs text-slate-500 mt-2">Ставка наценки при оплате по безналу (чтобы компенсировать
-              налоги/эквайринг).</div>
-          </div>
-          <div>
-            <label class="text-sm text-slate-400 font-bold mb-2 block">Комиссия агентства (%)</label>
-            <input id="cfg-agency-percent" type="number" class="form-input text-right mono" placeholder="15" />
-            <div class="text-xs text-slate-500 mt-2">Используется для расчёта «Чек на руки» и «Чек для клиента».</div>
-          </div>
-
-          <!-- СКИДКА ЗА ОБЪЁМ -->
-          <div class="md:col-span-2 mt-4 pt-4 border-t border-white/10">
-            <div class="flex items-center gap-3 mb-3">
-              <i data-lucide="percent" class="w-5 h-5 text-emerald-400"></i>
-              <span class="text-sm text-slate-400 font-bold">Скидка за объём</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-              <div>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" id="cfg-bulk-discount-enabled" class="accent-emerald-500 w-5 h-5" />
-                  <span class="text-sm text-slate-300 font-semibold">Включить скидку</span>
-                </label>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-semibold text-slate-300 mb-2">
+                Ваше имя / Псевдоним
+              </label>
+              <input type="text" id="personal-name" class="form-input" placeholder="Например: Александр Великий 🎩"
+                maxlength="100" />
+              <div class="text-xs text-slate-500 mt-1">
+                Будет отображаться в подписи КП
               </div>
-
-              <div>
-                <label class="text-xs text-slate-500 font-semibold mb-1 block">Процент скидки (%)</label>
-                <input id="cfg-bulk-discount-percent" type="number" class="form-input text-right mono" placeholder="10"
-                  min="0" max="100" />
-              </div>
-
-              <div>
-                <label class="text-xs text-slate-500 font-semibold mb-1 block">Минимум услуг</label>
-                <input id="cfg-bulk-discount-min" type="number" class="form-input text-right mono" placeholder="2"
-                  min="1" max="100" />
-              </div>
-            </div>
-
-            <div class="text-xs text-slate-500">
-              Автоматически применяется когда клиент заказывает несколько услуг. Например: 10% скидка при заказе от 2
-              услуг.
-            </div>
-          </div>
-
-          <!-- СГОРАЮЩИЙ БОНУС -->
-          <div class="md:col-span-2">
-            <div class="text-sm text-slate-400 font-bold mb-2 block">Сгорающий бонус</div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div>
-                <label class="text-xs text-slate-500 font-semibold mb-1 block">Название</label>
-                <input id="cfg-burn-title" type="text" class="form-input" placeholder="Напр. Появление Гендиректора"
-                  maxlength="120" />
-              </div>
-              <div>
-                <label class="text-xs text-slate-500 font-semibold mb-1 block">Старая цена (₽)</label>
-                <input id="cfg-burn-price" type="number" class="form-input text-right mono" placeholder="15000" />
-              </div>
-              <div>
-                <label class="text-xs text-slate-500 font-semibold mb-1 block">Новая цена (₽)</label>
-                <input id="cfg-burn-discount-price" type="number" class="form-input text-right mono" placeholder="0" />
-              </div>
-              <div>
-                <label class="text-xs text-slate-500 font-semibold mb-1 block">Срок (часов)</label>
-                <input id="cfg-burn-hours" type="number" class="form-input text-right mono" placeholder="48" />
-              </div>
-            </div>
-            <div class="text-xs text-slate-500 mt-2">
-              <strong>Старая цена</strong> — зачёркивается в КП.
-              <strong>Новая цена</strong> — если 0, то "БЕСПЛАТНО", если больше 0, то показывается эта цена.
-              <br>Например: Старая 15,000 → Новая 10,000 = скидка 5,000. Или: Старая 15,000 → Новая 0 = БЕСПЛАТНО.
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ACTIVATION STATUS -->
-      <div class="glass rounded-2xl p-5 mb-6 border-2 border-amber-500/20">
-        <div class="flex items-center gap-3 mb-4">
-          <i data-lucide="key" class="w-6 h-6 text-amber-400"></i>
-          <span class="text-lg font-extrabold text-white">Активация</span>
-        </div>
-
-        <div class="bg-white/5 rounded-xl p-4 mb-4">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-sm text-slate-400 font-bold">Статус лицензии</span>
-            <span id="license-status-badge" class="text-sm font-bold">Проверка...</span>
+        <!-- DATA MANAGEMENT -->
+        <div class="glass rounded-2xl p-5 mb-6 border-2 border-emerald-500/20">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <i data-lucide="database" class="w-6 h-6 text-emerald-400"></i>
+              <span class="text-lg font-extrabold text-white">Управление данными</span>
+            </div>
+            <div class="text-xs text-slate-500 mono" id="db-version-display">v2.0</div>
           </div>
 
-          <div class="text-xs text-slate-500 mb-2">Ключ активации</div>
-          <div class="flex items-center gap-2">
-            <div id="license-key-display" class="font-mono text-sm text-slate-300 bg-black/20 rounded px-3 py-2 flex-1">
-              ••••-••••-••••-••••
-            </div>
-            <button id="btn-toggle-key" type="button" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition" aria-label="Показать/скрыть ключ">
-              <i data-lucide="eye-off" class="w-4 h-4 text-slate-400"></i>
+          <div class="grid grid-cols-2 gap-3 mb-5">
+            <button id="btn-export-data" class="btn-data btn-export">
+              <i data-lucide="download" class="w-5 h-5"></i>
+              <span>Экспорт</span>
+            </button>
+            <button id="btn-import-data" class="btn-data btn-import">
+              <i data-lucide="upload" class="w-5 h-5"></i>
+              <span>Импорт</span>
             </button>
           </div>
+
+          <div class="bg-white/5 rounded-xl p-4">
+            <div class="flex items-center justify-between text-sm mb-3">
+              <div class="flex items-center gap-2">
+                <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
+                <span class="text-slate-300 font-semibold">Целостность данных</span>
+              </div>
+              <span class="text-emerald-400 font-bold" id="data-integrity-status">OK</span>
+            </div>
+            <div class="grid grid-cols-3 gap-3 text-xs text-slate-500">
+              <div>Услуг: <span class="text-slate-300 font-bold" id="stats-services">0</span></div>
+              <div>Регионов: <span class="text-slate-300 font-bold" id="stats-regions">0</span></div>
+              <div>Бонусов: <span class="text-slate-300 font-bold" id="stats-bonuses">0</span></div>
+            </div>
+          </div>
         </div>
 
-        <button id="btn-reset-license-user"
-          class="w-full btn-secondary bg-amber-500/10 border-amber-500/25 text-amber-300 hover:bg-amber-500/20">
-          <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
-          <span>Сбросить активацию</span>
-        </button>
+        <!-- Profile -->
+        <div class="glass rounded-2xl p-5 mb-6">
+          <div class="text-lg font-extrabold text-white mb-4">Профиль</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-slate-400 font-bold mb-2 block">Бронь (%)</label>
+              <input id="cfg-deposit" type="number" class="form-input text-right mono" placeholder="30" />
+            </div>
 
-        <div class="text-xs text-slate-500 mt-3 text-center">
-          После сброса потребуется ввести ключ заново
+            <div>
+              <label class="text-sm text-slate-400 font-bold mb-2 block">Оплата по безналу (%)</label>
+              <input id="cfg-cashless-percent" type="number" class="form-input text-right mono" placeholder="6" />
+              <div class="text-xs text-slate-500 mt-2">Ставка наценки при оплате по безналу (чтобы компенсировать
+                налоги/эквайринг).</div>
+            </div>
+            <div>
+              <label class="text-sm text-slate-400 font-bold mb-2 block">Комиссия агентства (%)</label>
+              <input id="cfg-agency-percent" type="number" class="form-input text-right mono" placeholder="15" />
+              <div class="text-xs text-slate-500 mt-2">Используется для расчёта «Чек на руки» и «Чек для клиента».</div>
+            </div>
+
+            <!-- СКИДКА ЗА ОБЪЁМ -->
+            <div class="md:col-span-2 mt-4 pt-4 border-t border-white/10">
+              <div class="flex items-center gap-3 mb-3">
+                <i data-lucide="percent" class="w-5 h-5 text-emerald-400"></i>
+                <span class="text-sm text-slate-400 font-bold">Скидка за объём</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <div>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="cfg-bulk-discount-enabled" class="accent-emerald-500 w-5 h-5" />
+                    <span class="text-sm text-slate-300 font-semibold">Включить скидку</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="text-xs text-slate-500 font-semibold mb-1 block">Процент скидки (%)</label>
+                  <input id="cfg-bulk-discount-percent" type="number" class="form-input text-right mono"
+                    placeholder="10" min="0" max="100" />
+                </div>
+
+                <div>
+                  <label class="text-xs text-slate-500 font-semibold mb-1 block">Минимум услуг</label>
+                  <input id="cfg-bulk-discount-min" type="number" class="form-input text-right mono" placeholder="2"
+                    min="1" max="100" />
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-500">
+                Автоматически применяется когда клиент заказывает несколько услуг. Например: 10% скидка при заказе от 2
+                услуг.
+              </div>
+            </div>
+
+            <!-- СГОРАЮЩИЙ БОНУС -->
+            <div class="md:col-span-2">
+              <div class="text-sm text-slate-400 font-bold mb-2 block">Сгорающий бонус</div>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <label class="text-xs text-slate-500 font-semibold mb-1 block">Название</label>
+                  <input id="cfg-burn-title" type="text" class="form-input" placeholder="Напр. Появление Гендиректора"
+                    maxlength="120" />
+                </div>
+                <div>
+                  <label class="text-xs text-slate-500 font-semibold mb-1 block">Старая цена (₽)</label>
+                  <input id="cfg-burn-price" type="number" class="form-input text-right mono" placeholder="15000" />
+                </div>
+                <div>
+                  <label class="text-xs text-slate-500 font-semibold mb-1 block">Новая цена (₽)</label>
+                  <input id="cfg-burn-discount-price" type="number" class="form-input text-right mono"
+                    placeholder="0" />
+                </div>
+                <div>
+                  <label class="text-xs text-slate-500 font-semibold mb-1 block">Срок (часов)</label>
+                  <input id="cfg-burn-hours" type="number" class="form-input text-right mono" placeholder="48" />
+                </div>
+              </div>
+              <div class="text-xs text-slate-500 mt-2">
+                <strong>Старая цена</strong> — зачёркивается в КП.
+                <strong>Новая цена</strong> — если 0, то "БЕСПЛАТНО", если больше 0, то показывается эта цена.
+                <br>Например: Старая 15,000 → Новая 10,000 = скидка 5,000. Или: Старая 15,000 → Новая 0 = БЕСПЛАТНО.
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <!-- ACTIVATION STATUS -->
+        <div class="glass rounded-2xl p-5 mb-6 border-2 border-amber-500/20">
+          <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="key" class="w-6 h-6 text-amber-400"></i>
+            <span class="text-lg font-extrabold text-white">Активация</span>
+          </div>
+
+          <div class="bg-white/5 rounded-xl p-4 mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-slate-400 font-bold">Статус лицензии</span>
+              <span id="license-status-badge" class="text-sm font-bold">Проверка...</span>
+            </div>
+
+            <div class="text-xs text-slate-500 mb-2">Ключ активации</div>
+            <div class="flex items-center gap-2">
+              <div id="license-key-display"
+                class="font-mono text-sm text-slate-300 bg-black/20 rounded px-3 py-2 flex-1">
+                ••••-••••-••••-••••
+              </div>
+              <button id="btn-toggle-key" type="button" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
+                aria-label="Показать/скрыть ключ">
+                <i data-lucide="eye-off" class="w-4 h-4 text-slate-400"></i>
+              </button>
+            </div>
+          </div>
+
+          <button id="btn-reset-license-user"
+            class="w-full btn-secondary bg-amber-500/10 border-amber-500/25 text-amber-300 hover:bg-amber-500/20">
+            <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
+            <span>Сбросить активацию</span>
+          </button>
+
+          <div class="text-xs text-slate-500 mt-3 text-center">
+            После сброса потребуется ввести ключ заново
+          </div>
+        </div>
 
       </div><!-- /TAB: PROFILE -->
 
@@ -2445,7 +2479,8 @@
         </div>
         <div class="glass rounded-2xl p-5">
           <div class="text-base font-extrabold text-white mb-3">Услуги</div>
-          <input id="admin-search-services" type="text" class="form-input mb-3" placeholder="Поиск услуг..." style="min-height:40px;padding:10px 14px;font-size:13px;" />
+          <input id="admin-search-services" type="text" class="form-input mb-3" placeholder="Поиск услуг..."
+            style="min-height:40px;padding:10px 14px;font-size:13px;" />
           <div id="settings-services-list" class="space-y-2"></div>
         </div>
       </div><!-- /TAB: SERVICES -->
@@ -2469,7 +2504,8 @@
           <button id="btn-add-bonus" class="btn-add">+ Бонус</button>
           <button id="btn-add-payment" class="btn-add">+ Способ брони</button>
           <button id="btn-add-link" class="btn-add">+ Ссылка</button>
-          <button id="btn-reset-db" class="btn-add bg-red-500/10 border-red-500/25 text-red-300 hover:bg-red-500/20">Сброс БД</button>
+          <button id="btn-reset-db"
+            class="btn-add bg-red-500/10 border-red-500/25 text-red-300 hover:bg-red-500/20">Сброс БД</button>
         </div>
 
         <div class="space-y-5 pb-6">
@@ -2660,7 +2696,7 @@
         if (main) main.style.display = '';
 
         // Запускаем пошаговое обучение при первом запуске
-        setTimeout(function() {
+        setTimeout(function () {
           if (!localStorage.getItem('illusionist_onboarding_done')) {
             window._startOnboarding && window._startOnboarding();
           }
@@ -2671,18 +2707,18 @@
       // ============================================
       // ПОШАГОВОЕ ОБУЧЕНИЕ ПРИ ПЕРВОМ ЗАПУСКЕ
       // ============================================
-      (function() {
+      (function () {
         var steps = [
-          { el: '#inp-date',          title: 'Дата мероприятия',   text: 'Выберите дату проведения. Если дата попадает на праздник — цена автоматически увеличится.' },
-          { el: '#inp-time',          title: 'Время',              text: 'Укажите время начала или выберите «Без времени», если оно ещё не определено.' },
-          { el: '#inp-region',        title: 'Регион',             text: 'Выберите регион. Регионы и города добавляются в Настройках (шестерёнка сверху).' },
-          { el: '#inp-city',          title: 'Город',              text: 'Выберите город. От города зависит стоимость логистики.' },
-          { el: '#inp-cat',           title: 'Категория',          text: 'Выберите категорию услуг. Категории и цены настраиваются в Настройках.' },
-          { el: '#inp-svc',           title: 'Услуга',             text: 'Выберите конкретную услугу из списка. Её цена подставится автоматически.' },
-          { el: '#btn-add-service',   title: 'Добавить в корзину', text: 'Нажмите, чтобы добавить выбранную услугу в корзину. Можно добавить несколько услуг.' },
-          { el: '#btn-copy-quote',    title: 'Скопировать КП',     text: 'Формирует готовое коммерческое предложение и копирует в буфер обмена. Отправляйте клиенту!' },
-          { el: '#btn-settings',      title: 'Настройки',          text: 'Здесь добавляются регионы, услуги, цены, бонусы, способы оплаты и всё остальное.', liftParent: 'header' },
-          { el: null,                  title: 'Быстрые ответы',     text: 'Свайпните от правого края экрана влево, чтобы открыть панель быстрых ответов. Там можно создать и отправить шаблонные сообщения.', noTarget: true }
+          { el: '#inp-date', title: 'Дата мероприятия', text: 'Выберите дату проведения. Если дата попадает на праздник — цена автоматически увеличится.' },
+          { el: '#inp-time', title: 'Время', text: 'Укажите время начала или выберите «Без времени», если оно ещё не определено.' },
+          { el: '#inp-region', title: 'Регион', text: 'Выберите регион. Регионы и города добавляются в Настройках (шестерёнка сверху).' },
+          { el: '#inp-city', title: 'Город', text: 'Выберите город. От города зависит стоимость логистики.' },
+          { el: '#inp-cat', title: 'Категория', text: 'Выберите категорию услуг. Категории и цены настраиваются в Настройках.' },
+          { el: '#inp-svc', title: 'Услуга', text: 'Выберите конкретную услугу из списка. Её цена подставится автоматически.' },
+          { el: '#btn-add-service', title: 'Добавить в корзину', text: 'Нажмите, чтобы добавить выбранную услугу в корзину. Можно добавить несколько услуг.' },
+          { el: '#btn-copy-quote', title: 'Скопировать КП', text: 'Формирует готовое коммерческое предложение и копирует в буфер обмена. Отправляйте клиенту!' },
+          { el: '#btn-settings', title: 'Настройки', text: 'Здесь добавляются регионы, услуги, цены, бонусы, способы оплаты и всё остальное.', liftParent: 'header' },
+          { el: null, title: 'Быстрые ответы', text: 'Свайпните от правого края экрана влево, чтобы открыть панель быстрых ответов. Там можно создать и отправить шаблонные сообщения.', noTarget: true }
         ];
 
         var currentStep = 0;
@@ -2738,9 +2774,9 @@
               '<button class="ob-skip" id="ob-skip">Пропустить</button>';
 
             document.body.appendChild(tooltip);
-            document.getElementById('ob-next').onclick = function() { showStep(i + 1); };
+            document.getElementById('ob-next').onclick = function () { showStep(i + 1); };
             document.getElementById('ob-skip').onclick = finish;
-            overlay.onclick = function() { showStep(i + 1); };
+            overlay.onclick = function () { showStep(i + 1); };
             return;
           }
 
@@ -2792,15 +2828,15 @@
 
             document.body.appendChild(tooltip);
 
-            document.getElementById('ob-next').onclick = function() { showStep(i + 1); };
+            document.getElementById('ob-next').onclick = function () { showStep(i + 1); };
             document.getElementById('ob-skip').onclick = finish;
-            overlay.onclick = function() { showStep(i + 1); };
+            overlay.onclick = function () { showStep(i + 1); };
           }
 
           setTimeout(positionTooltip, 450);
         }
 
-        window._startOnboarding = function() { showStep(0); };
+        window._startOnboarding = function () { showStep(0); };
       })();
 
       window.addEventListener('DOMContentLoaded', async function () {
@@ -9325,14 +9361,23 @@
                   return false;
                 }
 
-                // Проверяем срок действия
-                const activated = new Date(firebaseData.activatedDate);
-                const now = new Date();
-                const daysDiff = (now - activated) / (1000 * 60 * 60 * 24);
-
-                if (daysDiff > 365) {
-                  console.log('⏰ License expired');
-                  return 'expired';
+                // Проверяем срок действия (если есть)
+                if (firebaseData.expiresAt) {
+                  const expiryDate = new Date(firebaseData.expiresAt);
+                  const now = new Date();
+                  if (now > expiryDate) {
+                    console.log('⏰ License expired (Firebase date)');
+                    return 'expired';
+                  }
+                } else if (firebaseData.expiryDays && firebaseData.expiryDays < 999999) {
+                  // Fallback: вычисляем по activatedDate + expiryDays
+                  const activated = new Date(firebaseData.activatedDate);
+                  const now = new Date();
+                  const daysDiff = (now - activated) / (1000 * 60 * 60 * 24);
+                  if (daysDiff > firebaseData.expiryDays) {
+                    console.log('⏰ License expired (calculated)');
+                    return 'expired';
+                  }
                 }
 
                 console.log('✅ License valid (Firebase)');
@@ -9345,13 +9390,24 @@
             }
 
             // ЛОКАЛЬНАЯ ПРОВЕРКА (если Firebase отключен или недоступен)
-            const activated = new Date(data.activated);
-            const now = new Date();
-            const daysDiff = (now - activated) / (1000 * 60 * 60 * 24);
-
-            if (daysDiff > 365) {
-              console.log('⏰ License expired (local)');
-              return 'expired';
+            if (data.expiresAt) {
+              const expiryDate = new Date(data.expiresAt);
+              const now = new Date();
+              if (now > expiryDate) {
+                console.log('⏰ License expired (local date)');
+                return 'expired';
+              }
+            } else {
+              // Fallback для старых лицензий (считаем вечными или 365 по умолчанию, но лучше верить expiryDays если они были сохранены)
+              // В старой версии мы не сохраняли expiryDays локально, поэтому здесь сложнее.
+              // Но новые лицензии будут иметь expiresAt.
+              const activated = new Date(data.activated);
+              const now = new Date();
+              const daysDiff = (now - activated) / (1000 * 60 * 60 * 24);
+              if (daysDiff > 365) { // Старый фоллбэк только для старых ключей без expiresAt
+                console.log('⏰ License expired (legacy local)');
+                return 'expired';
+              }
             }
 
             console.log('✅ License valid (local)');
@@ -9406,14 +9462,17 @@
               }
             }
 
-            // Активируем ключ
-            await keyRef.update({
+            // Активируем ключ (activatedDate только при первой активации)
+            const activateData = {
               activated: true,
               deviceId: deviceId,
               installId: installId,
-              activatedDate: new Date().toISOString(),
               lastCheck: new Date().toISOString()
-            });
+            };
+            if (!existingData.activatedDate) {
+              activateData.activatedDate = new Date().toISOString();
+            }
+            await keyRef.update(activateData);
 
             console.log('✅ License activated in Firebase');
 
@@ -9428,12 +9487,44 @@
           console.warn('⚠️ Firebase not enabled, activating locally only');
         }
 
+        // Вычисляем срок действия перед сохранением
+        let expiresAt = null;
+
+        if (window.firebaseEnabled && window.firebaseDB) {
+          try {
+            // Получаем актуальные данные expiryDays из Firebase если они там есть
+            // (В этой точке existingData уже может быть недоступен, если мы не в блоке if firebaseEnabled выше)
+            // Но мы точно знаем что Firebase работает, раз мы здесь.
+            // Лучше использовать данные которые мы уже получили выше (existingData), но переменная там локальная.
+
+            // Дублируем получение для надежности (это не страшно)
+            const keyRef = window.firebaseDB.ref('licenses/' + key.replace(/[\.#$\[\]]/g, '-'));
+            const snapshot = await keyRef.once('value'); // Кеш Firebase сделает это быстро
+            const currentData = snapshot.val();
+
+            if (currentData && currentData.expiryDays && currentData.expiryDays < 999999) {
+              if (currentData.expiresAt) {
+                // Уже есть — используем существующий (не продлеваем!)
+                expiresAt = currentData.expiresAt;
+              } else {
+                // Первая активация — вычисляем от даты первой активации
+                const baseDate = currentData.activatedDate ? new Date(currentData.activatedDate) : new Date();
+                const expiryDate = new Date(baseDate);
+                expiryDate.setDate(expiryDate.getDate() + currentData.expiryDays);
+                expiresAt = expiryDate.toISOString();
+                await keyRef.update({ expiresAt: expiresAt });
+              }
+            }
+          } catch (e) { }
+        }
+
         // ЛОКАЛЬНОЕ СОХРАНЕНИЕ
         const data = {
           key: key,
           device: deviceId,
           install: installId,
-          activated: new Date().toISOString()
+          activated: new Date().toISOString(),
+          expiresAt: expiresAt // Сохраняем срок действия
         };
 
         const encoded = btoa(JSON.stringify(data));
@@ -9709,7 +9800,7 @@
     // ============================================
     // ТАКТИЛЬНАЯ ОБРАТНАЯ СВЯЗЬ (вибрация + визуальный fallback для iOS)
     // ============================================
-    (function() {
+    (function () {
       const isVibrationSupported = 'vibrate' in navigator;
 
       // CSS для визуального fallback (iOS не поддерживает navigator.vibrate)
@@ -9726,7 +9817,7 @@
 
       // Последний нажатый элемент - для визуального fallback
       let lastTappedEl = null;
-      document.addEventListener('pointerdown', function(e) {
+      document.addEventListener('pointerdown', function (e) {
         lastTappedEl = e.target.closest('button, .card, [role="button"], .btn-gold, .btn-primary, .btn-secondary, .btn-icon, .drawer-template-card');
       }, true);
 
@@ -9746,10 +9837,10 @@
         el.classList.remove('haptic-tap', 'haptic-success', 'haptic-shake');
         void el.offsetWidth; // reflow
         el.classList.add(cls);
-        setTimeout(function() { el.classList.remove(cls); }, 400);
+        setTimeout(function () { el.classList.remove(cls); }, 400);
       }
 
-      window.hapticFeedback = function(type) {
+      window.hapticFeedback = function (type) {
         type = type || 'medium';
         if (isVibrationSupported) {
           var pattern = HAPTIC[type] || HAPTIC.medium;
@@ -9773,7 +9864,7 @@
         if (window.App && window.App.showToast) {
           const originalShowToast = window.App.showToast;
 
-          window.App.showToast = function(message, duration) {
+          window.App.showToast = function (message, duration) {
             // Определяем тип вибрации по сообщению
             if (message.includes('скопировано') || message.includes('добавлена') || message.includes('восстановлена')) {
               hapticFeedback('success');  // Успешное действие - два импульса

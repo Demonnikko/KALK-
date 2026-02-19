@@ -9549,6 +9549,218 @@
       font-family: 'Inter', -apple-system, sans-serif;
     `;
 
+        // ——— EXPIRED SUBSCRIPTION SCREEN ———
+        if (reason === 'expired') {
+          const box = document.createElement('div');
+          box.style.cssText = `
+        background: linear-gradient(145deg, #0d0d1a, #1a1028);
+        border: 1px solid rgba(239,68,68,0.25);
+        border-radius: 24px;
+        padding: 36px 28px 28px;
+        max-width: 370px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
+      `;
+
+          // Icon
+          const iconWrap = document.createElement('div');
+          iconWrap.style.cssText = `
+        width: 72px; height: 72px;
+        background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05));
+        border: 1px solid rgba(239,68,68,0.3);
+        border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px;
+        margin: 0 auto 20px;
+      `;
+          iconWrap.textContent = '⏰';
+
+          const title = document.createElement('h2');
+          title.textContent = 'Подписка закончилась';
+          title.style.cssText = `
+        font-family: 'Cinzel', serif;
+        font-size: 22px;
+        color: #f8fafc;
+        margin: 0 0 10px;
+        letter-spacing: 0.01em;
+      `;
+
+          const subtitle = document.createElement('p');
+          subtitle.innerHTML = 'Упс! Ваш доступ к приложению истёк.<br>Напишите мне — и мы быстро всё решим 🙂';
+          subtitle.style.cssText = `
+        color: rgba(148,163,184,0.85);
+        font-size: 14px;
+        line-height: 1.65;
+        margin: 0 0 28px;
+      `;
+
+          const divider = document.createElement('div');
+          divider.style.cssText = `
+        font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+        color: rgba(148,163,184,0.4);
+        text-transform: uppercase;
+        margin-bottom: 14px;
+      `;
+          divider.textContent = 'Продлить подписку';
+
+          // VK button
+          const vkBtn = document.createElement('a');
+          vkBtn.href = 'https://vk.com/id196783025';
+          vkBtn.target = '_blank';
+          vkBtn.rel = 'noopener';
+          vkBtn.style.cssText = `
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; padding: 13px 16px;
+        background: #0077FF;
+        color: #fff; text-decoration: none;
+        border-radius: 12px; font-size: 15px; font-weight: 600;
+        margin-bottom: 10px; box-sizing: border-box;
+        transition: opacity 0.15s;
+      `;
+          vkBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15.07 2H8.93C3.33 2 2 3.33 2 8.93v6.14C2 20.67 3.33 22 8.93 22h6.14C20.67 22 22 20.67 22 15.07V8.93C22 3.33 20.67 2 15.07 2zm3.08 13.5h-1.72c-.65 0-.85-.52-2.02-1.72-.99-1-1.43-.99-1.43.08v1.47c0 .46-.15.73-1.4.73-2.06 0-4.35-1.26-5.95-3.6C4.04 9.85 3.4 7.82 3.4 7.37c0-.25.09-.48.53-.48h1.72c.39 0 .54.18.69.6.76 2.2 2.04 4.13 2.57 4.13.2 0 .29-.09.29-.59V8.77c-.06-1.05-.61-1.14-.61-1.52 0-.22.18-.44.46-.44h2.71c.33 0 .44.17.44.55v3.66c0 .33.15.44.24.44.2 0 .37-.11.74-.48 1.14-1.28 1.95-3.25 1.95-3.25.11-.22.29-.43.68-.43h1.72c.52 0 .63.27.52.55-.22.99-2.34 4.02-2.34 4.02-.18.29-.24.42 0 .74.17.24.73.74 1.1 1.19.68.77 1.2 1.41 1.34 1.86.14.44-.09.66-.53.66z"/></svg> Написать ВКонтакте';
+          vkBtn.addEventListener('mouseenter', () => { vkBtn.style.opacity = '0.85'; });
+          vkBtn.addEventListener('mouseleave', () => { vkBtn.style.opacity = '1'; });
+
+          // Telegram button
+          const tgBtn = document.createElement('a');
+          tgBtn.href = 'https://t.me/Dmitrokko';
+          tgBtn.target = '_blank';
+          tgBtn.rel = 'noopener';
+          tgBtn.style.cssText = `
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; padding: 13px 16px;
+        background: #229ED9;
+        color: #fff; text-decoration: none;
+        border-radius: 12px; font-size: 15px; font-weight: 600;
+        margin-bottom: 24px; box-sizing: border-box;
+        transition: opacity 0.15s;
+      `;
+          tgBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8l-1.69 7.96c-.12.58-.46.72-.93.45l-2.57-1.9-1.24 1.19c-.14.13-.25.25-.52.25l.19-2.64 4.84-4.37c.21-.19-.05-.29-.32-.1L7.69 14.6l-2.52-.79c-.55-.17-.56-.55.12-.81l9.83-3.79c.46-.17.86.11.52.59z"/></svg> Написать в Telegram';
+          tgBtn.addEventListener('mouseenter', () => { tgBtn.style.opacity = '0.85'; });
+          tgBtn.addEventListener('mouseleave', () => { tgBtn.style.opacity = '1'; });
+
+          // Toggle for key input
+          const toggleBtn = document.createElement('button');
+          toggleBtn.textContent = 'У меня уже есть новый ключ →';
+          toggleBtn.style.cssText = `
+        background: none; border: none; padding: 0;
+        color: rgba(148,163,184,0.5); font-size: 13px; cursor: pointer;
+        font-family: inherit; transition: color 0.15s;
+      `;
+          toggleBtn.addEventListener('mouseenter', () => { toggleBtn.style.color = 'rgba(148,163,184,0.85)'; });
+          toggleBtn.addEventListener('mouseleave', () => { toggleBtn.style.color = 'rgba(148,163,184,0.5)'; });
+
+          // Key input section (hidden by default)
+          const keySection = document.createElement('div');
+          keySection.style.cssText = `
+        display: none;
+        margin-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        padding-top: 20px;
+      `;
+
+          const keyInput = document.createElement('input');
+          keyInput.type = 'text';
+          keyInput.placeholder = 'XXXX-XXXX-XXXX-XXXX';
+          keyInput.maxLength = 19;
+          keyInput.style.cssText = `
+        width: 100%; padding: 12px 16px; box-sizing: border-box;
+        border: 1px solid rgba(245,158,11,0.3);
+        background: rgba(0,0,0,0.3); color: #f8fafc;
+        border-radius: 8px; font-size: 16px; font-family: monospace;
+        text-align: center; text-transform: uppercase; margin-bottom: 10px;
+      `;
+          keyInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+            let formatted = '';
+            for (let i = 0; i < value.length && i < 16; i++) {
+              if (i > 0 && i % 4 === 0) formatted += '-';
+              formatted += value[i];
+            }
+            e.target.value = formatted;
+          });
+
+          const keyBtn = document.createElement('button');
+          keyBtn.textContent = 'Активировать ключ';
+          keyBtn.style.cssText = `
+        width: 100%; padding: 12px;
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        border: none; border-radius: 8px;
+        color: #0a0a0f; font-size: 15px; font-weight: 600; cursor: pointer;
+      `;
+
+          const keyError = document.createElement('div');
+          keyError.style.cssText = `color: #ef4444; font-size: 13px; margin-top: 10px; min-height: 18px;`;
+
+          keyBtn.addEventListener('click', async () => {
+            const key = keyInput.value.trim();
+            keyBtn.textContent = '⏳ Проверка...';
+            keyBtn.disabled = true;
+            keyInput.disabled = true;
+            try {
+              const result = await activateLicense(key);
+              if (result.success) {
+                keyBtn.textContent = '✅ Активировано!';
+                keyBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                keyBtn.style.color = '#fff';
+                setTimeout(function() {
+                  overlay.style.transition = 'opacity 0.6s';
+                  overlay.style.opacity = '0';
+                  setTimeout(function() {
+                    document.body.removeChild(overlay);
+                    if (typeof window.showMagicAfterActivation === 'function') window.showMagicAfterActivation();
+                    setTimeout(function() {
+                      if (typeof window.showApp === 'function') window.showApp();
+                    }, 3000);
+                  }, 600);
+                }, 1500);
+              } else {
+                keyBtn.textContent = 'Активировать ключ';
+                keyBtn.disabled = false;
+                keyInput.disabled = false;
+                keyError.textContent = result.error || 'Неверный ключ';
+                keyInput.style.borderColor = '#ef4444';
+                setTimeout(() => { keyInput.style.borderColor = 'rgba(245,158,11,0.3)'; }, 2000);
+              }
+            } catch(err) {
+              keyBtn.textContent = 'Активировать ключ';
+              keyBtn.disabled = false;
+              keyInput.disabled = false;
+              keyError.textContent = 'Произошла ошибка. Попробуйте снова.';
+            }
+          });
+          keyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') keyBtn.click(); });
+
+          toggleBtn.addEventListener('click', () => {
+            if (keySection.style.display === 'none') {
+              keySection.style.display = 'block';
+              toggleBtn.textContent = '← Скрыть';
+              keyInput.focus();
+            } else {
+              keySection.style.display = 'none';
+              toggleBtn.textContent = 'У меня уже есть новый ключ →';
+            }
+          });
+
+          keySection.appendChild(keyInput);
+          keySection.appendChild(keyBtn);
+          keySection.appendChild(keyError);
+
+          box.appendChild(iconWrap);
+          box.appendChild(title);
+          box.appendChild(subtitle);
+          box.appendChild(divider);
+          box.appendChild(vkBtn);
+          box.appendChild(tgBtn);
+          box.appendChild(toggleBtn);
+          box.appendChild(keySection);
+          overlay.appendChild(box);
+          document.body.appendChild(overlay);
+          return;
+        }
+        // ——— END EXPIRED SCREEN ———
+
         const box = document.createElement('div');
         box.style.cssText = `
       background: linear-gradient(135deg, rgba(26,26,46,0.98), rgba(15,15,25,0.98));
@@ -9562,7 +9774,7 @@
     `;
 
         const title = document.createElement('h2');
-        title.textContent = reason === 'expired' ? 'Продление лицензии' : 'Активация приложения';
+        title.textContent = 'Активация приложения';
         title.style.cssText = `
       font-family: 'Cinzel', serif;
       font-size: 24px;
@@ -9573,9 +9785,7 @@
     `;
 
         const subtitle = document.createElement('p');
-        subtitle.textContent = reason === 'expired'
-          ? 'Ваша лицензия истекла. Введите новый ключ.'
-          : 'Введите лицензионный ключ для активации';
+        subtitle.textContent = 'Введите лицензионный ключ для активации';
         subtitle.style.cssText = `
       color: rgba(148,163,184,0.8);
       margin-bottom: 24px;
